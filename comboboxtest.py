@@ -7,18 +7,13 @@ def callbackFunc(event):
 
 
 app = tk.Tk()
-app.geometry('200x100')
+app.geometry('600x300')
 
 labelTop = tk.Label(app,
-                    text="Choose your favourite month")
+                    text="Choose your favourite fruit")
 labelTop.grid(column=0, row=0)
 
-comboExample = ttk.Combobox(app,
-                            values=[
-                                "January",
-                                "February",
-                                "March",
-                                "April"])
+comboExample = ttk.Combobox(app, values=["Apple", "Grape", "Orange", "Strawberry"])
 
 comboExample.grid(column=0, row=1)
 comboExample.current(1)

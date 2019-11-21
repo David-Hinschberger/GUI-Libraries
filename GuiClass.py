@@ -1,11 +1,12 @@
 # import cs160gui4
 from tkinter import *
-import tkinter
+import tkinter as tk
 from tkinter import ttk
 
 
-class GuiClass(Frame):
+class GuiClass(tk.Tk):
     def __init__(self):
+        super(GuiClass, self).__init__()
         self.inputs = {}
         self.functions = {}
         self.printWindow = {}
@@ -19,13 +20,14 @@ class GuiClass(Frame):
         self.cancelButtonInfo = {}
         # self.__enterBoxText = None
         self.root = None
-        super(GuiClass, self).__init__()
+        #super(GuiClass, self).__init__()
 
     def setCombobox(self, prompt, col, row, choices):
         self.setText(prompt, col, row)
-        self.setInputInfo(prompt, col + 1, row, 0, 'str')
-        combo = ttk.Combobox(self)
+        #self.setInputInfo(prompt, col + 1, row, 0, 'str')
+        combo = ttk.Combobox(self, values=choices)
         combo.current(1)
+        combo.grid(column=col, row=row)
         #combo.bind("<<ComboboxSelected>>", callbackFunc)
 
     def setPrintWindow(self, label, startCol, startRow, endCol, endRow):
