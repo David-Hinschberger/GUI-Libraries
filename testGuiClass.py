@@ -34,6 +34,7 @@ def main():
 
    screen.setText ("Enter string 1", col=1, row=4)
    screen.getString ("str1", col=2, row=4)
+
    fruitChoices = ["Apple", "Pear", "Grape", "Orange"]
    screen.setCombobox("Enter your favorite fruit", col=3, row=5, choices=fruitChoices)
 

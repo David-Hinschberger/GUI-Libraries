@@ -4,9 +4,9 @@ import tkinter as tk
 from tkinter import ttk
 
 
-class GuiClass(tk.Tk):
+class GuiClass():
     def __init__(self):
-        super(GuiClass, self).__init__()
+        #super(GuiClass, self).__init__()
         self.inputs = {}
         self.functions = {}
         self.printWindow = {}
@@ -19,15 +19,14 @@ class GuiClass(tk.Tk):
         self.oKButtonInfo = {}
         self.cancelButtonInfo = {}
         # self.__enterBoxText = None
-        self.root = None
-        #super(GuiClass, self).__init__()
+        self.root = tk.Tk()
 
     def setCombobox(self, prompt, col, row, choices):
         self.setText(prompt, col, row)
+        combo = ttk.Combobox(self.root, values=choices)
+        combo.current(0)
+        combo.grid(column=col+1, row=row)
         #self.setInputInfo(prompt, col + 1, row, 0, 'str')
-        combo = ttk.Combobox(self, values=choices)
-        combo.current(1)
-        combo.grid(column=col, row=row)
         #combo.bind("<<ComboboxSelected>>", callbackFunc)
 
     def setPrintWindow(self, label, startCol, startRow, endCol, endRow):
@@ -140,7 +139,7 @@ class GuiClass(tk.Tk):
         self.root.quit()
 
     def startInput(self):
-        self.root = Tk()
+        #self.root = Tk()
         for index in range(len(self.prompts)):
             p = self.prompts[index]
             if p['endCol'] != -1:
