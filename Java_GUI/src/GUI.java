@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
+
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -28,13 +30,32 @@ public class GUI extends Application {
     static private HashMap<String, Button> buttonHashMap = new HashMap<>();
     static private HashMap<String, TextField> textFieldHashMap = new HashMap<>();
 
+    static private List<Function<String[], String>> functionsList = new ArrayList<>();
+    static int functions_index = 0;
+    static private List<Consumer<String[]>> consumersList = new ArrayList<>();
+    static int consumers_index = 0;
+
+
     static boolean addTextField(String id, String prompt) {
         return textFieldsList.add(new Pair<>(id, prompt));
     }
 
     static boolean addButton(String id, String prompt, Consumer<String[]> function, String... ids) {
-        return buttonsList.add(new Pair<>(id, new Object[]{prompt, function, ids}));
+        consumersList.add(function);
+        return buttonsList.add(new Pair<>(id, new Object[]{prompt, ids, consumersList.size() - 1}));
+
     }
+
+    static boolean addButton(boolean returns, String id, String prompt, Function<String[], String> function, String... ids) {
+        if (returns) {
+            functionsList.add(function);
+        }
+        return buttonsList.add(new Pair<>(id, new Object[]{prompt, ids, functionsList.size() - 1, returns}));
+    }
+
+//    static boolean addButton(String id, String prompt, Function<String[], String> function, String... ids) {
+
+//    }
 
     private void setup() {
 
@@ -62,14 +83,19 @@ public class GUI extends Application {
             Button button = new Button((String) data.getValue()[0]);
             GridPane.setConstraints(button, 1, rightRow++);
             grid.getChildren().add(button);
-
             button.setOnAction(e -> {
                 List<String> arguments = new ArrayList<>();
-                for (String id : (String[]) data.getValue()[2]) {
+                for (String id : (String[]) data.getValue()[1]) {
                     arguments.add(textFieldHashMap.get(id).getText());
                 }
-                ((Consumer<String[]>) data.getValue()[1])
-                        .accept(arguments.toArray(new String[arguments.size()]));
+
+                if (data.getValue().length == 4) {
+                    output.setText(functionsList.get((int) data.getValue()[2])
+                            .apply(arguments.toArray(new String[arguments.size()])));
+                } else {
+                    consumersList.get((int) data.getValue()[2])
+                            .accept(arguments.toArray(new String[arguments.size()]));
+                }
             });
             buttonHashMap.put(data.getKey(), button);
         }
