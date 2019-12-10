@@ -29,7 +29,10 @@ public class Test {
         GUI.addButton("print_things", "Print things!", Test::printThings, "second", "third",
             "fourth", "fifth", "sixth");
 
-        gui.main(args);
+        GUI.addTextField("fizzbuzz", "Fizz Buzz until: ");
+
+
+        gui.main();
 //        Application.launch(GUI.class, args);
 
     }

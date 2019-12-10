@@ -28,10 +28,6 @@ public class GUI extends Application {
     static private HashMap<String, Button> buttonHashMap = new HashMap<>();
     static private HashMap<String, TextField> textFieldHashMap = new HashMap<>();
 
-    static boolean addTextField(String id) {
-        return addTextField(id, "");
-    }
-
     static boolean addTextField(String id, String prompt) {
         return textFieldsList.add(new Pair<>(id, prompt));
     }
@@ -39,7 +35,6 @@ public class GUI extends Application {
     static boolean addButton(String id, String prompt, Consumer<String[]> function, String... ids) {
         return buttonsList.add(new Pair<>(id, new Object[]{prompt, function, ids}));
     }
-
 
     private void setup() {
 
@@ -50,12 +45,18 @@ public class GUI extends Application {
         for (Pair<String, String> data : textFieldsList) {
             TextField field = new TextField();
             field.setPromptText(data.getValue());
-            field.setPrefColumnCount(10);
+            field.setPrefColumnCount(20);
             field.getText();
             GridPane.setConstraints(field, 0, leftRow++);
             grid.getChildren().add(field);
             textFieldHashMap.put(data.getKey(), field);
         }
+
+        //Adding a Label
+        final Label output = new Label("");
+        GridPane.setConstraints(output, 0, leftRow++);
+        GridPane.setColumnSpan(output, 2);
+        grid.getChildren().add(output);
 
         for (Pair<String, Object[]> data : buttonsList) {
             Button button = new Button((String) data.getValue()[0]);
@@ -68,16 +69,11 @@ public class GUI extends Application {
                     arguments.add(textFieldHashMap.get(id).getText());
                 }
                 ((Consumer<String[]>) data.getValue()[1])
-                    .accept(arguments.toArray(new String[arguments.size()]));
+                        .accept(arguments.toArray(new String[arguments.size()]));
             });
             buttonHashMap.put(data.getKey(), button);
         }
 
-        //Adding a Label
-        final Label label = new Label("");
-        GridPane.setConstraints(label, 0, leftRow++);
-        GridPane.setColumnSpan(label, 2);
-        grid.getChildren().add(label);
 
     }
 
@@ -96,7 +92,7 @@ public class GUI extends Application {
         stage.show();
     }
 
-    public void main(String[] args) {
+    public void main(String... args) {
         launch();
     }
 
