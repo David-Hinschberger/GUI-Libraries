@@ -1,7 +1,7 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
-
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -20,25 +20,24 @@ public class GUI extends Application {
     private Scene scene = new Scene(grid, 640, 480);
     static private int leftRow = 0;
     static private int rightRow = 0;
-    static private List<Consumer<Object>> consumerList = new ArrayList<>();
+
     static private List<Pair<String, String>> textFieldsList = new ArrayList<>();
-    static private List<Pair<String, Pair<String, Consumer<Object>>>> buttonsList = new ArrayList<>();
+    //data for buttons associated with id
+    //prompt, function, ids...
+    static private List<Pair<String, Object[]>> buttonsList = new ArrayList<>();
+    static private HashMap<String, Button> buttonHashMap = new HashMap<>();
+    static private HashMap<String, TextField> textFieldHashMap = new HashMap<>();
 
-
-    static boolean addFunction(Consumer<Object> c){
-        return consumerList.add(c);
-    }
-
-    static boolean addTextField(String id){
+    static boolean addTextField(String id) {
         return addTextField(id, "");
     }
 
-    static boolean addTextField(String id, String prompt){
+    static boolean addTextField(String id, String prompt) {
         return textFieldsList.add(new Pair<>(id, prompt));
     }
 
-    static boolean addButton(String id, String prompt, Consumer<Object> function){
-        return buttonsList.add(new Pair<>(id, new Pair<>(prompt, function)));
+    static boolean addButton(String id, String prompt, Consumer<String[]> function, String... ids) {
+        return buttonsList.add(new Pair<>(id, new Object[]{prompt, function, ids}));
     }
 
 
@@ -48,50 +47,31 @@ public class GUI extends Application {
         grid.setVgap(5);
         grid.setHgap(5);
 
-        for(Pair<String, String> data: textFieldsList){
+        for (Pair<String, String> data : textFieldsList) {
             TextField field = new TextField();
             field.setPromptText(data.getValue());
             field.setPrefColumnCount(10);
             field.getText();
             GridPane.setConstraints(field, 0, leftRow++);
             grid.getChildren().add(field);
+            textFieldHashMap.put(data.getKey(), field);
         }
 
-        //Defining the Name text field
-        final TextField name = new TextField();
-        name.setPromptText("Enter your first name.");
-        name.setPrefColumnCount(10);
-        name.getText();
-        GridPane.setConstraints(name, 0, leftRow++);
-        grid.getChildren().add(name);
-
-        for(Pair<String, Pair<String, Consumer<Object>>> data: buttonsList) {
-            Button button = new Button(data.getValue().getKey());
+        for (Pair<String, Object[]> data : buttonsList) {
+            Button button = new Button((String) data.getValue()[0]);
             GridPane.setConstraints(button, 1, rightRow++);
             grid.getChildren().add(button);
-            button.setOnAction(e -> data.getValue().getValue().accept(name.getText()));
+
+            button.setOnAction(e -> {
+                List<String> arguments = new ArrayList<>();
+                for (String id : (String[]) data.getValue()[2]) {
+                    arguments.add(textFieldHashMap.get(id).getText());
+                }
+                ((Consumer<String[]>) data.getValue()[1])
+                    .accept(arguments.toArray(new String[arguments.size()]));
+            });
+            buttonHashMap.put(data.getKey(), button);
         }
-
-
-//Defining the Last Name text field
-        final TextField lastName = new TextField();
-        lastName.setPromptText("Enter your last name.");
-        GridPane.setConstraints(lastName, 0, leftRow++);
-        grid.getChildren().add(lastName);
-//Defining the Comment text field
-        final TextField comment = new TextField();
-        comment.setPrefColumnCount(15);
-        comment.setPromptText("Enter your comment.");
-        GridPane.setConstraints(comment, 0, leftRow++);
-        grid.getChildren().add(comment);
-//Defining the Submit button
-        Button submit = new Button("Submit");
-        GridPane.setConstraints(submit, 1, rightRow++);
-        grid.getChildren().add(submit);
-//Defining the Clear button
-        Button custom_action = new Button("Custom");
-        GridPane.setConstraints(custom_action, 1, rightRow++);
-        grid.getChildren().add(custom_action);
 
         //Adding a Label
         final Label label = new Label("");
@@ -99,20 +79,7 @@ public class GUI extends Application {
         GridPane.setColumnSpan(label, 2);
         grid.getChildren().add(label);
 
-//Setting an action for the Submit button
-        submit.setOnAction(e -> {
-            if ((comment.getText() != null && !comment.getText().isEmpty())) {
-                label.setText(name.getText() + " " + lastName.getText() + ", "
-                        + "thank you for your comment!");
-            } else {
-                label.setText("You have not left a comment.");
-            }
-        });
-
-//Setting an action for the Clear button
-        custom_action.setOnAction(e -> consumerList.get(0).accept(name.getText()));
     }
-
 
     @Override
     public void start(Stage stage) {
