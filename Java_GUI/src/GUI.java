@@ -3,6 +3,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -29,23 +30,34 @@ public class GUI extends Application {
     private static int leftRow = 0;
     private static int rightRow = 0;
 
-    private enum ELEMENT {
-        TEXTFIELD, BUTTON, LABEL;
+    public enum ELEMENT {
+        STRINGFIELD, INTFIELD, DECIMALFIELD, BUTTON, LABEL, COMBOBOX;
     }
 
-    //Hashmap of IDs mapped to the element they are
+    public enum FIELD {
+        STRINGFIELD, INTFIELD, DECIMALFIELD;
+    }
+
+    //Hashmap of IDs mapped to the corresponding element
     private static HashMap<String, ELEMENT> IDMap = new HashMap<>();
-    //list of pairs with id as key and value being the textfield's prompt
-    private static List<Pair<String, String>> textFieldsList = new ArrayList<>();
+
+//    //list of pairs with id as key and value being the textfield's prompt
+//    private static List<Pair<String, String>> textFieldsList = new ArrayList<>();
+
+    //List of pairs with id as key and value being the field's prompt
+    private static List<Pair<String, String>> fieldsList = new ArrayList<>();
     //list of pairs with id as key and value being a list of button prompt(string),
     //ids of inputs to be connected to(string), index of the function to be called
     //from either consumerList or functionsList (int), and a boolean that specifies
     //consumerList or functionsList.
     private static List<Pair<String, Object[]>> buttonsList = new ArrayList<>();
+    //Hashmap of IDs mapped to the corresponding button
     private static HashMap<String, Button> buttonHashMap = new HashMap<>();
+    //Hashmap of IDs mapped to the corresponding TextField
     private static HashMap<String, TextField> textFieldHashMap = new HashMap<>();
-
+    //List of functions
     private static List<Function<String[], String>> functionsList = new ArrayList<>();
+    //List of Consumers
     private static List<Consumer<String[]>> consumersList = new ArrayList<>();
 
     public static void setTitle(String title) {
@@ -70,30 +82,54 @@ public class GUI extends Application {
         }
     }
 
+    static boolean addField(FIELD field, String id, String prompt) throws DuplicateIDException {
+        checkDuplicateID(id);
+        ELEMENT elem = null;
+        switch (field) {
+            case STRINGFIELD:
+                elem = ELEMENT.STRINGFIELD;
+                break;
+            case INTFIELD:
+                elem = ELEMENT.INTFIELD;
+                break;
+            case DECIMALFIELD:
+                elem = ELEMENT.DECIMALFIELD;
+                break;
+        }
+        IDMap.put(id, elem);
+        return fieldsList.add(new Pair<>(id, prompt));
+    }
+
+    static boolean addIntField(String id, String prompt) throws DuplicateIDException {
+        checkDuplicateID(id);
+        IDMap.put(id, ELEMENT.INTFIELD);
+        return fieldsList.add(new Pair<>(id, prompt));
+    }
+
     static boolean addTextField(String id, String prompt) throws DuplicateIDException {
         checkDuplicateID(id);
-        IDMap.put(id, ELEMENT.TEXTFIELD);
-        return textFieldsList.add(new Pair<>(id, prompt));
+        IDMap.put(id, ELEMENT.STRINGFIELD);
+        return fieldsList.add(new Pair<>(id, prompt));
     }
 
     static boolean addPrintButton(String id, String prompt, Consumer<String[]> function,
-        String... ids) {
+                                  String... ids) {
         checkDuplicateID(id);
         checkUnreferencedIDs(ids);
         IDMap.put(id, ELEMENT.BUTTON);
         consumersList.add(function);
         return buttonsList
-            .add(new Pair<>(id, new Object[]{prompt, ids, consumersList.size() - 1, false}));
+                .add(new Pair<>(id, new Object[]{prompt, ids, consumersList.size() - 1, false}));
     }
 
     static boolean addGUIButton(String id, String prompt, Function<String[], String> function,
-        String... ids) {
+                                String... ids) {
         checkDuplicateID(id);
         checkUnreferencedIDs(ids);
         IDMap.put(id, ELEMENT.BUTTON);
         functionsList.add(function);
         return buttonsList
-            .add(new Pair<>(id, new Object[]{prompt, ids, functionsList.size() - 1, true}));
+                .add(new Pair<>(id, new Object[]{prompt, ids, functionsList.size() - 1, true}));
     }
 
     public static void setIcon(String icon) {
@@ -109,11 +145,30 @@ public class GUI extends Application {
         grid.setVgap(5);
         grid.setHgap(5);
 
-        for (Pair<String, String> data : textFieldsList) {
+        for (Pair<String, String> data : fieldsList) {
             TextField field = new TextField();
             field.setPromptText(data.getValue());
             field.setPrefColumnCount(20);
-            field.getText();
+            switch (IDMap.get(data.getKey())) {
+                case DECIMALFIELD:
+                    field.textProperty().addListener(
+                            (observable, oldValue, newValue) ->
+                            {
+                                if (!newValue.matches("\\d{0,13}(\\.\\d{0,13})?")) {
+                                    field.setText(oldValue);
+                                }
+                            });
+                    break;
+                case INTFIELD:
+                    field.textProperty().addListener(
+                            (observable, oldValue, newValue) ->
+                            {
+                                if (!newValue.matches("\\d{0,13}")) {
+                                    field.setText(oldValue);
+                                }
+                            });
+                    break;
+            }
             GridPane.setConstraints(field, 0, leftRow++);
             grid.getChildren().add(field);
             textFieldHashMap.put(data.getKey(), field);
@@ -145,10 +200,10 @@ public class GUI extends Application {
 
                 if ((boolean) data.getValue()[3]) {
                     output.setText(functionsList.get((int) data.getValue()[2])
-                        .apply(arguments.toArray(new String[0])));
+                            .apply(arguments.toArray(new String[0])));
                 } else {
                     consumersList.get((int) data.getValue()[2])
-                        .accept(arguments.toArray(new String[0]));
+                            .accept(arguments.toArray(new String[0]));
                 }
             });
             buttonHashMap.put(data.getKey(), button);
@@ -160,8 +215,8 @@ public class GUI extends Application {
     public void start(Stage stage) {
         if (debug) {
             System.out.println(
-                "JavaFX Version: " + System.getProperty("java.version") + "\nJava Version: "
-                    + System.getProperty("javafx.version"));
+                    "JavaFX Version: " + System.getProperty("java.version") + "\nJava Version: "
+                            + System.getProperty("javafx.version"));
         }
 
         setup();
@@ -177,8 +232,12 @@ public class GUI extends Application {
         stage.show();
     }
 
-    public void main(String... args) {
-        launch(args);
+    public void start() {
+        launch();
     }
+
+//    public void main(String... args) {
+//        launch(args);
+//    }
 
 }
