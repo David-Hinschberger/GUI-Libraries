@@ -1,4 +1,5 @@
-import javafx.application.Application;
+import static GUI.FIELD.*;
+import GUI.*;
 
 public class Test {
 
@@ -23,8 +24,8 @@ public class Test {
     }
 
 //    private static void addTwoNumbers(){
-//        int foo = GUI.getInt(1);
-//        int bar = GUI.getInt(2);
+//        int foo = GUI.GUI.getInt(1);
+//        int bar = GUI.GUI.getInt(2);
 //
 //
 //    }
@@ -50,30 +51,24 @@ public class Test {
         GUI.addTextField("Enter a number", "Enter a number");
         GUI.addPrintButton("squareBtn", "Square this number", Test::squareNum, "Enter a number");
 
-//        GUI.addNumberField("int1", "enter first number");
+        GUI.addField(INTFIELD, "identifier", "Integer here");
 
-        GUI.addField(GUI.FIELD.INTFIELD, "foo", "Integer here");
-        GUI.addField(GUI.FIELD.DECIMALFIELD, "bar", "Decimal here");
-
-//        GUI.addTextField("1", "Enter gibberish here");
-//        GUI.addTextField("2", "Enter gibberish here");
-//        GUI.addTextField("3", "Enter gibberish here");
-//        GUI.addTextField("4", "Enter gibberish here");
-//        GUI.addTextField("5", "Enter gibberish here");
-//        GUI.addPrintButton("printBtn", "Print things!", Test::printThings, "1", "2",
+//        GUI.GUI.addTextField("1", "Enter gibberish here");
+//        GUI.GUI.addTextField("2", "Enter gibberish here");
+//        GUI.GUI.addTextField("3", "Enter gibberish here");
+//        GUI.GUI.addTextField("4", "Enter gibberish here");
+//        GUI.GUI.addTextField("5", "Enter gibberish here");
+//        GUI.GUI.addPrintButton("printBtn", "Print things!", Test::printThings, "1", "2",
 //            "3", "4", "5");
 //
-//        GUI.addTextField("fizzbuzz", "Fizz Buzz until: ");
-//        GUI.addGUIButton("fizzbuzzBtn", "FizzBuzz!", Test::fizzbuzz, "fizzbuzz");
+//        GUI.GUI.addTextField("fizzbuzz", "Fizz Buzz until: ");
+//        GUI.GUI.addGUIButton("fizzbuzzBtn", "FizzBuzz!", Test::fizzbuzz, "fizzbuzz");
 
-//        GUI.addGUIButton("fizzbuzzBtn", "FizzBuzz!", Test::addTwoNumbers, "int1", "int2");
+//        GUI.GUI.addGUIButton("fizzbuzzBtn", "FizzBuzz!", Test::addTwoNumbers, "int1", "int2");
 
         GUI.setDebug(true);
 
         new GUI().start();
-
-//        Application.launch(GUI.class);
-
     }
 
 }

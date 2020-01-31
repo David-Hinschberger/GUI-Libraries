@@ -1,9 +1,10 @@
+package GUI;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -29,14 +30,6 @@ public class GUI extends Application {
     private Scene scene = new Scene(grid, 640, 480);
     private static int leftRow = 0;
     private static int rightRow = 0;
-
-    public enum ELEMENT {
-        STRINGFIELD, INTFIELD, DECIMALFIELD, BUTTON, LABEL, COMBOBOX;
-    }
-
-    public enum FIELD {
-        STRINGFIELD, INTFIELD, DECIMALFIELD;
-    }
 
     //Hashmap of IDs mapped to the corresponding element
     private static HashMap<String, ELEMENT> IDMap = new HashMap<>();
@@ -82,7 +75,7 @@ public class GUI extends Application {
         }
     }
 
-    static boolean addField(FIELD field, String id, String prompt) throws DuplicateIDException {
+    public static boolean addField(FIELD field, String id, String prompt) throws DuplicateIDException {
         checkDuplicateID(id);
         ELEMENT elem = null;
         switch (field) {
@@ -106,14 +99,14 @@ public class GUI extends Application {
         return fieldsList.add(new Pair<>(id, prompt));
     }
 
-    static boolean addTextField(String id, String prompt) throws DuplicateIDException {
+    public static boolean addTextField(String id, String prompt) throws DuplicateIDException {
         checkDuplicateID(id);
         IDMap.put(id, ELEMENT.STRINGFIELD);
         return fieldsList.add(new Pair<>(id, prompt));
     }
 
-    static boolean addPrintButton(String id, String prompt, Consumer<String[]> function,
-                                  String... ids) {
+    public static boolean addPrintButton(String id, String prompt, Consumer<String[]> function,
+        String... ids) {
         checkDuplicateID(id);
         checkUnreferencedIDs(ids);
         IDMap.put(id, ELEMENT.BUTTON);
