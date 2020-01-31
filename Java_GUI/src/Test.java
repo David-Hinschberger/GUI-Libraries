@@ -28,7 +28,6 @@ public class Test {
         }
     }
 
-
     private static void squareNum(String... args) {
         String value = args[0];
         int temp = Integer.parseInt(value);
@@ -36,25 +35,26 @@ public class Test {
     }
 
     public static void main(String[] args) {
+        GUI.setTitle("Windows 11");
+        GUI.setIcon("https://puu.sh/F5xQD.png");
 
-        GUI gui = new GUI();
-        GUI.addTextField("first", "Enter a number");
-        GUI.addButton("identifier", "Square this number", Test::squareNum, "first");
+        GUI.addTextField("Enter a number", "Enter a number");
+        GUI.addPrintButton("squareBtn", "Square this number", Test::squareNum, "Enter a number");
 
-        GUI.addTextField("second", "Enter gibberish here");
-        GUI.addTextField("third", "Enter gibberish here");
-        GUI.addTextField("fourth", "Enter gibberish here");
-        GUI.addTextField("fifth", "Enter gibberish here");
-        GUI.addTextField("sixth", "Enter gibberish here");
-        GUI.addButton("print_things", "Print things!", Test::printThings, "second", "third",
-                "fourth", "fifth", "sixth");
+        GUI.addTextField("1", "Enter gibberish here");
+        GUI.addTextField("2", "Enter gibberish here");
+        GUI.addTextField("3", "Enter gibberish here");
+        GUI.addTextField("4", "Enter gibberish here");
+        GUI.addTextField("5", "Enter gibberish here");
+        GUI.addPrintButton("printBtn", "Print things!", Test::printThings, "1", "2",
+            "3", "4", "5");
 
         GUI.addTextField("fizzbuzz", "Fizz Buzz until: ");
-        GUI.addButton(true, "fizzbuzz button", "FizzBuzz!", Test::fizzbuzz, "fizzbuzz");
+        GUI.addGUIButton("fizzbuzzBtn", "FizzBuzz!", Test::fizzbuzz, "fizzbuzz");
 
-
+        GUI.setDebug(true);
+        GUI gui = new GUI();
         gui.main();
-//        Application.launch(GUI.class, args);
 
     }
 
