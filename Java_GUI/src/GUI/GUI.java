@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -14,6 +15,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
@@ -26,8 +29,9 @@ public class GUI extends Application {
 
     //Grid for UI
     private GridPane grid = new GridPane();
+    private VBox vbox = new VBox();
     //Scene of application
-    private Scene scene = new Scene(grid, 640, 480);
+    private Scene scene = new Scene(vbox, 640, 480);
     private static int leftRow = 0;
     private static int rightRow = 0;
 
@@ -108,7 +112,7 @@ public class GUI extends Application {
             .add(new Pair<>(id, new Object[]{prompt, ids, consumersList.size() - 1, false}));
     }
 
-    static boolean addGUIButton(String id, String prompt, Function<String[], String> function,
+    public static boolean addGUIButton(String id, String prompt, Function<String[], String> function,
         String... ids) {
         checkDuplicateID(id);
         checkUnreferencedIDs(ids);
@@ -130,6 +134,19 @@ public class GUI extends Application {
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setVgap(5);
         grid.setHgap(5);
+
+        final TextArea output = new TextArea();
+        output.setWrapText(false);
+        output.setEditable(false);
+
+        VBox.setVgrow(output, Priority.ALWAYS);
+        vbox.setAlignment(Pos.TOP_CENTER);
+        vbox.getChildren().add(grid);
+        vbox.getChildren().add(output);
+
+        final Label test = new Label("Enter a number:");
+        GridPane.setConstraints(test, 0, leftRow++);
+        grid.getChildren().add(test);
 
         for (Pair<String, String> data : fieldsList) {
             TextField field = new TextField();
@@ -160,19 +177,9 @@ public class GUI extends Application {
             textFieldHashMap.put(data.getKey(), field);
         }
 
-        //Adding a Label
         final Label outputLabel = new Label("Output:");
         GridPane.setConstraints(outputLabel, 0, leftRow++);
-        GridPane.setColumnSpan(outputLabel, 2);
         grid.getChildren().add(outputLabel);
-
-        final TextArea output = new TextArea();
-        output.setWrapText(false);
-        output.setEditable(false);
-        GridPane.setConstraints(output, 0, leftRow++);
-        GridPane.setColumnSpan(output, 2);
-
-        grid.getChildren().add(output);
 
         for (Pair<String, Object[]> data : buttonsList) {
             Button button = new Button((String) data.getValue()[0]);
@@ -203,6 +210,12 @@ public class GUI extends Application {
             System.out.println(
                 "JavaFX Version: " + System.getProperty("java.version") + "\nJava Version: "
                     + System.getProperty("javafx.version"));
+            scene.widthProperty().addListener(
+                (observableValue, oldSceneWidth, newSceneWidth) -> System.out
+                    .println("Width: " + newSceneWidth));
+            scene.widthProperty().addListener(
+                (observableValue, oldSceneHeight, newSceneHeight) -> System.out
+                    .println("Height: " + newSceneHeight));
         }
 
         setup();
@@ -215,6 +228,7 @@ public class GUI extends Application {
         stage.setResizable(true);
         //adds scene to stage
         stage.setScene(scene);
+
         stage.show();
     }
 
