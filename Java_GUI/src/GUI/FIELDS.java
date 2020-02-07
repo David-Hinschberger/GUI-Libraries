@@ -1,5 +1,5 @@
 package GUI;
 
-public enum FIELD {
+public enum FIELDS {
     STRINGFIELD, INTFIELD, DECIMALFIELD;
 }

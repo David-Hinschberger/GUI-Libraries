@@ -1,4 +1,4 @@
-import static GUI.FIELD.*;
+import static FIELDS.*;
 import GUI.*;
 
 public class Test {
@@ -24,9 +24,8 @@ public class Test {
     }
 
 //    private static void addTwoNumbers(){
-//        int foo = GUI.GUI.getInt(1);
-//        int bar = GUI.GUI.getInt(2);
-//
+//        int foo = GUI.getInt("1");
+//        int bar = GUI.getInt("2");
 //
 //    }
 
@@ -51,7 +50,7 @@ public class Test {
         GUI.addTextField("Enter a number", "Enter a number");
         GUI.addPrintButton("squareBtn", "Square this number", Test::squareNum, "Enter a number");
 
-        GUI.addField(INTFIELD, "identifier", "Integer here");
+        GUI.addField(DECIMALFIELD, "identifier", "Decimal here");
 
 //        GUI.GUI.addTextField("1", "Enter gibberish here");
 //        GUI.GUI.addTextField("2", "Enter gibberish here");

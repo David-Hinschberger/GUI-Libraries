@@ -32,7 +32,7 @@ public class GUI extends Application {
     private static int rightRow = 0;
 
     //Hashmap of IDs mapped to the corresponding element
-    private static HashMap<String, ELEMENT> IDMap = new HashMap<>();
+    private static HashMap<String, ELEMENTS> IDMap = new HashMap<>();
 
 //    //list of pairs with id as key and value being the textfield's prompt
 //    private static List<Pair<String, String>> textFieldsList = new ArrayList<>();
@@ -75,33 +75,26 @@ public class GUI extends Application {
         }
     }
 
-    public static boolean addField(FIELD field, String id, String prompt) throws DuplicateIDException {
+    public static boolean addField(FIELDS field, String id, String prompt)
+        throws DuplicateIDException {
         checkDuplicateID(id);
-        ELEMENT elem = null;
-        switch (field) {
-            case STRINGFIELD:
-                elem = ELEMENT.STRINGFIELD;
-                break;
-            case INTFIELD:
-                elem = ELEMENT.INTFIELD;
-                break;
-            case DECIMALFIELD:
-                elem = ELEMENT.DECIMALFIELD;
-                break;
-        }
+        ELEMENTS elem = field == FIELDS.STRINGFIELD ? ELEMENTS.STRINGFIELD :
+            field == FIELDS.DECIMALFIELD ? ELEMENTS.DECIMALFIELD :
+                field == FIELDS.INTFIELD ? ELEMENTS.INTFIELD :
+                    null;
         IDMap.put(id, elem);
         return fieldsList.add(new Pair<>(id, prompt));
     }
 
     static boolean addIntField(String id, String prompt) throws DuplicateIDException {
         checkDuplicateID(id);
-        IDMap.put(id, ELEMENT.INTFIELD);
+        IDMap.put(id, ELEMENTS.INTFIELD);
         return fieldsList.add(new Pair<>(id, prompt));
     }
 
     public static boolean addTextField(String id, String prompt) throws DuplicateIDException {
         checkDuplicateID(id);
-        IDMap.put(id, ELEMENT.STRINGFIELD);
+        IDMap.put(id, ELEMENTS.STRINGFIELD);
         return fieldsList.add(new Pair<>(id, prompt));
     }
 
@@ -109,20 +102,20 @@ public class GUI extends Application {
         String... ids) {
         checkDuplicateID(id);
         checkUnreferencedIDs(ids);
-        IDMap.put(id, ELEMENT.BUTTON);
+        IDMap.put(id, ELEMENTS.BUTTON);
         consumersList.add(function);
         return buttonsList
-                .add(new Pair<>(id, new Object[]{prompt, ids, consumersList.size() - 1, false}));
+            .add(new Pair<>(id, new Object[]{prompt, ids, consumersList.size() - 1, false}));
     }
 
     static boolean addGUIButton(String id, String prompt, Function<String[], String> function,
-                                String... ids) {
+        String... ids) {
         checkDuplicateID(id);
         checkUnreferencedIDs(ids);
-        IDMap.put(id, ELEMENT.BUTTON);
+        IDMap.put(id, ELEMENTS.BUTTON);
         functionsList.add(function);
         return buttonsList
-                .add(new Pair<>(id, new Object[]{prompt, ids, functionsList.size() - 1, true}));
+            .add(new Pair<>(id, new Object[]{prompt, ids, functionsList.size() - 1, true}));
     }
 
     public static void setIcon(String icon) {
@@ -145,21 +138,21 @@ public class GUI extends Application {
             switch (IDMap.get(data.getKey())) {
                 case DECIMALFIELD:
                     field.textProperty().addListener(
-                            (observable, oldValue, newValue) ->
-                            {
-                                if (!newValue.matches("\\d{0,13}(\\.\\d{0,13})?")) {
-                                    field.setText(oldValue);
-                                }
-                            });
+                        (observable, oldValue, newValue) ->
+                        {
+                            if (!newValue.matches("\\d*(\\.\\d*)?")) {
+                                field.setText(oldValue);
+                            }
+                        });
                     break;
                 case INTFIELD:
                     field.textProperty().addListener(
-                            (observable, oldValue, newValue) ->
-                            {
-                                if (!newValue.matches("\\d{0,13}")) {
-                                    field.setText(oldValue);
-                                }
-                            });
+                        (observable, oldValue, newValue) ->
+                        {
+                            if (!newValue.matches("\\d{0,10}")) {
+                                field.setText(oldValue);
+                            }
+                        });
                     break;
             }
             GridPane.setConstraints(field, 0, leftRow++);
@@ -193,10 +186,10 @@ public class GUI extends Application {
 
                 if ((boolean) data.getValue()[3]) {
                     output.setText(functionsList.get((int) data.getValue()[2])
-                            .apply(arguments.toArray(new String[0])));
+                        .apply(arguments.toArray(new String[0])));
                 } else {
                     consumersList.get((int) data.getValue()[2])
-                            .accept(arguments.toArray(new String[0]));
+                        .accept(arguments.toArray(new String[0]));
                 }
             });
             buttonHashMap.put(data.getKey(), button);
@@ -208,8 +201,8 @@ public class GUI extends Application {
     public void start(Stage stage) {
         if (debug) {
             System.out.println(
-                    "JavaFX Version: " + System.getProperty("java.version") + "\nJava Version: "
-                            + System.getProperty("javafx.version"));
+                "JavaFX Version: " + System.getProperty("java.version") + "\nJava Version: "
+                    + System.getProperty("javafx.version"));
         }
 
         setup();
@@ -228,9 +221,5 @@ public class GUI extends Application {
     public void start() {
         launch();
     }
-
-//    public void main(String... args) {
-//        launch(args);
-//    }
 
 }
