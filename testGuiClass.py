@@ -2,7 +2,6 @@ from Python_GUI import GuiClass
 
 
 def addTwoValues(screen):
-    # print (s)
     int1 = screen.get("int1")
     int2 = screen.get("int2")
     total = int1 + int2
