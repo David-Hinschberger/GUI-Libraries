@@ -1,0 +1,5 @@
+package GUI;
+
+public enum FIELDS {
+    STRINGFIELD, INTFIELD, DECIMALFIELD;
+}
