@@ -6,7 +6,7 @@ from tkinter import ttk
 
 class GuiClass():
     def __init__(self):
-        #super(GuiClass, self).__init__()
+        # super(GuiClass, self).__init__()
         self.inputs = {}
         self.functions = {}
         self.printWindow = {}
@@ -21,13 +21,7 @@ class GuiClass():
         # self.__enterBoxText = None
         self.root = tk.Tk()
 
-    def setCombobox(self, prompt, col, row, choices):
-        self.setText(prompt, col, row)
-        combo = ttk.Combobox(self.root, values=choices)
-        combo.current(0)
-        combo.grid(column=col+1, row=row)
-        #self.setInputInfo(prompt, col + 1, row, 0, 'str')
-        #combo.bind("<<ComboboxSelected>>", callbackFunc)
+
 
     def setPrintWindow(self, label, startCol, startRow, endCol, endRow):
         self.printWindow[label] = {}
@@ -81,7 +75,7 @@ class GuiClass():
 
     def setInputInfo(self, label, col, row, defValue, typeOfInput):
         self.inputs[label] = {}
-        self.inputs[label]['value'] = defValue
+        self.inputs[label]['value'] = defValue[0] if typeOfInput == 'combo' else defValue
         self.inputs[label]['initValue'] = defValue
         self.inputs[label]['type'] = typeOfInput
         self.inputs[label]['col'] = col
@@ -102,6 +96,12 @@ class GuiClass():
 
     def getFloat(self, label, col, row, defValue=0.0):
         self.setInputInfo(label, col, row, defValue, 'float')
+
+    def getCombobox(self, prompt, col, row, choices):
+        self.setText(prompt, col, row)
+        self.setInputInfo(prompt, col + 1, row, choices, 'combo')
+        # self.setInputInfo(prompt, col + 1, row, 0, 'str')
+        # combo.bind("<<ComboboxSelected>>", callbackFunc)
 
     def getSortedLabels(self):
         sortedLabels = list(self.inputs.keys())
@@ -126,6 +126,7 @@ class GuiClass():
         #   self.inputs[self.labels[index]]['value'] = self.inputs[self.labels[index]]['Entry'].get()
         sortedLabels = self.getSortedLabels()
         for label in sortedLabels:
+            # if self.inputs[label]['type'] == 'combo':
             self.inputs[label]['value'] = self.inputs[label]['Entry'].get()
         self.root.quit()
 
@@ -139,7 +140,7 @@ class GuiClass():
         self.root.quit()
 
     def startInput(self):
-        #self.root = Tk()
+        # self.root = Tk()
         for index in range(len(self.prompts)):
             p = self.prompts[index]
             if p['endCol'] != -1:
@@ -158,9 +159,14 @@ class GuiClass():
         sortedLabels = self.getSortedLabels()
         for label in sortedLabels:
             l = self.inputs[label]
-            l['Entry'] = Entry(self.root, width=20)
-            l['Entry'].grid(sticky="NW", row=l['row'], column=l['col'], padx=5, pady=5)
-            l['Entry'].insert(0, l['value'])
+            if l['type'] == 'combo':
+                l['Entry'] = ttk.Combobox(self.root, values=l['initValue'], state="readonly")
+                l['Entry'].current(0)
+                l['Entry'].grid(column=l['col'], row=l['row'])
+            else:
+                l['Entry'] = Entry(self.root, width=20)
+                l['Entry'].grid(sticky="NW", row=l['row'], column=l['col'], padx=5, pady=5)
+                l['Entry'].insert(0, l['value'])
 
         for label in list(self.printWindow.keys()):
             f = Frame(self.root)
