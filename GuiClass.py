@@ -4,33 +4,28 @@ import tkinter as tk
 from tkinter import ttk
 
 
-class GuiClass():
+class GuiClass:
     def __init__(self):
-        # super(GuiClass, self).__init__()
         self.inputs = {}
         self.functions = {}
         self.printWindow = {}
         self.spacers = []
         self.prompts = []
-        # self.labels = []
         self.numOfItems = 0
         self.useOKButton = False
         self.useCancelButton = False
         self.oKButtonInfo = {}
         self.cancelButtonInfo = {}
-        # self.__enterBoxText = None
         self.root = tk.Tk()
 
-
-
-    def setPrintWindow(self, label, startCol, startRow, endCol, endRow):
+    def setPrintWindow(self, label: str, startCol: int, startRow: int, endCol: int, endRow: int) -> None:
         self.printWindow[label] = {}
         self.printWindow[label]['startCol'] = startCol
         self.printWindow[label]['startRow'] = startRow
         self.printWindow[label]['endCol'] = endCol
         self.printWindow[label]['endRow'] = endRow
 
-    def print(self, label, *params):
+    def print(self, label: str, *params) -> None:
         print(params, "\n", type(params), "\n")
         self.printWindow[label]['Text'].config(state=NORMAL)
         # self.printWindow [label]['Text'].insert (END, "hello\n")
@@ -38,42 +33,33 @@ class GuiClass():
             self.printWindow[label]['Text'].insert(END, item)
         self.printWindow[label]['Text'].config(state=DISABLED)
 
-    def setFunction(self, label, col, row, function):
+    def setFunction(self, label: str, col: int, row: int, function) -> None:
         self.functions[label] = {}
         self.functions[label]['function'] = function
         self.functions[label]['col'] = col
         self.functions[label]['row'] = row
 
-    def setOKButton(self, text, col, row):
+    def setOKButton(self, text: str, col: int, row: int) -> None:
         self.useOKButton = True
         self.oKButtonInfo['text'] = text
         self.oKButtonInfo['col'] = col
         self.oKButtonInfo['row'] = row
 
-    def setCancelButton(self, text, col, row):
+    def setCancelButton(self, text: str, col: int, row: int) -> None:
         self.useCancelButton = True
         self.cancelButtonInfo['text'] = text
         self.cancelButtonInfo['col'] = col
         self.cancelButtonInfo['row'] = row
 
-    def setText(self, prompt, col, row, endCol=-1, endRow=-1, align='left'):
-        temp = {}
-        temp['prompt'] = prompt
-        temp['align'] = align
-        temp['col'] = col
-        temp['row'] = row
-        temp['endCol'] = endCol
-        temp['endRow'] = endRow
-        self.prompts.append(temp)
+    def setText(self, prompt: str, col: int, row: int, endCol=-1, endRow=-1, align='left') -> None:
+        self.prompts.append(
+            {'prompt': prompt, 'align': align, 'col': col, 'row': row, 'endCol': endCol, 'endRow': endRow})
 
-    def setSpacer(self, col, row, width):
-        temp = {}
-        temp['width'] = width
-        temp['col'] = col
-        temp['row'] = row
+    def setSpacer(self, col: int, row: int, width: int) -> None:
+        temp = {'width': width, 'col': col, 'row': row}
         self.spacers.append(temp)
 
-    def setInputInfo(self, label, col, row, defValue, typeOfInput):
+    def setInputInfo(self, label: str, col: object, row: object, defValue: object, typeOfInput: object) -> object:
         self.inputs[label] = {}
         self.inputs[label]['value'] = defValue[0] if typeOfInput == 'combo' else defValue
         self.inputs[label]['initValue'] = defValue
@@ -82,34 +68,29 @@ class GuiClass():
         self.inputs[label]['row'] = row
         self.numOfItems = self.numOfItems + 1
         self.inputs[label]['index'] = self.numOfItems
-        # self.labels.append (label)
 
-    def getInt(self, label, col, row, defValue=0):
+    def getInt(self, label: str, col: int, row: int, defValue=0) -> None:
         self.setInputInfo(label, col, row, defValue, 'int')
 
-    def getIntV(self, prompt, label, col, row, defValue=0):
+    def getIntV(self, prompt: str, label: str, col: int, row: int, defValue=0) -> None:
         self.setText(prompt, col, row)
         self.setInputInfo(label, col + 1, row, defValue, 'int')
 
-    def getString(self, label, col, row, defValue=""):
+    def getString(self, label: str, col: int, row: int, defValue="") -> None:
         self.setInputInfo(label, col, row, defValue, 'str')
 
-    def getFloat(self, label, col, row, defValue=0.0):
+    def getFloat(self, label: str, col: int, row: int, defValue=0.0) -> None:
         self.setInputInfo(label, col, row, defValue, 'float')
 
-    def getCombobox(self, prompt, col, row, choices):
+    def getCombobox(self, prompt: str, col: int, row: int, choices: list) -> None:
         self.setText(prompt, col, row)
         self.setInputInfo(prompt, col + 1, row, choices, 'combo')
-        # self.setInputInfo(prompt, col + 1, row, 0, 'str')
-        # combo.bind("<<ComboboxSelected>>", callbackFunc)
 
     def getSortedLabels(self):
-        sortedLabels = list(self.inputs.keys())
-        sortedLabels.sort(key=lambda x: int(self.inputs[x]['index']))
-        return sortedLabels
+        return sorted(list(self.inputs.keys()), key=lambda x: int(self.inputs[x]['index']))
 
     # we go here when the user exits the form and wants to keep the data
-    def someOtherButtonPressed(self, event):
+    def someOtherButtonPressed(self, event: EventType) -> None:
         # getting the internal name of the widget from the text displayed
         # need a better solution, may not be unique
         # first character in the name is a period - so it's removed
@@ -120,27 +101,19 @@ class GuiClass():
             self.inputs[label]['value'] = self.inputs[label]['Entry'].get()
         self.functions[name]['function'](self)
 
-    def enterButtonPressed(self, event):
-        # copy from the widgets into the dictionary
-        # for index in range(len(self.inputs)):
-        #   self.inputs[self.labels[index]]['value'] = self.inputs[self.labels[index]]['Entry'].get()
+    def enterButtonPressed(self, event: EventType) -> None:
         sortedLabels = self.getSortedLabels()
         for label in sortedLabels:
-            # if self.inputs[label]['type'] == 'combo':
             self.inputs[label]['value'] = self.inputs[label]['Entry'].get()
         self.root.quit()
 
-    def cancelButtonPressed(self, event):
-        # setting EVERY input  back to it's initial value
-        # for index in range(len(self.inputs)):
-        #   self.inputs[self.labels[index]]['value'] = self.inputs[self.labels[index]]['initValue']
+    def cancelButtonPressed(self, event: EventType) -> None:
         sortedLabels = self.getSortedLabels()
         for label in sortedLabels:
             self.inputs[label]['value'] = self.inputs[label]['initValue']
         self.root.quit()
 
-    def startInput(self):
-        # self.root = Tk()
+    def startInput(self) -> None:
         for index in range(len(self.prompts)):
             p = self.prompts[index]
             if p['endCol'] != -1:
@@ -154,8 +127,6 @@ class GuiClass():
             s = self.spacers[index]
             Label(self.root, text='', width=s['width']).grid(sticky="NW", row=s['row'], column=s['col'])
 
-        # sortedLabels = list(self.inputs.keys())
-        # sortedLabels.sort(key=lambda x:int(self.inputs[x]['index']))
         sortedLabels = self.getSortedLabels()
         for label in sortedLabels:
             l = self.inputs[label]
@@ -180,10 +151,6 @@ class GuiClass():
             f.grid(sticky="NSEW", row=pw['startRow'], column=pw['startCol'], padx=5, pady=5,
                    columnspan=(pw['endCol'] - pw['startCol'] + 1))
 
-            # pw['Text'].grid(sticky="NSEW", row=pw['startRow'], column=pw['startCol'], padx=5, pady=5, columnspan=(pw['endCol'] - pw['startCol'] + 1))
-            # print ("row=",pw['startRow'], "column=", pw['endCol'], "columnspan=", pw['endCol'] - pw['startCol'] + 1)
-            # pw['Text'].insert (0, l['value'])
-
         for funcLabel in self.functions:
             l = self.functions[funcLabel]
             l['Button'] = Button(self.root, takefocus=1, text=funcLabel, name=funcLabel.lower())
@@ -191,8 +158,6 @@ class GuiClass():
                              row=l['row'], column=l['col'])
             l['Button'].bind("<Return>", self.someOtherButtonPressed)
             l['Button'].bind("<Button-1>", self.someOtherButtonPressed)
-            # l['Button'].bind("<Return>"  , l['function'])
-            # l['Button'].bind("<Button-1>", l['function'])
 
         # needs to go in here somewhere
         if self.useOKButton:
@@ -215,10 +180,10 @@ class GuiClass():
 
         self.root.destroy()
 
-    def getInputs(self, msg, title):
+    def getInputs(self, title: str) -> None:
         self.startInput()
 
-    def get(self, label):
+    def get(self, label: str) -> object:
         if self.inputs[label]['type'] == 'int':
             return int(self.inputs[label]['value'])
         elif self.inputs[label]['type'] == 'float':
@@ -226,8 +191,6 @@ class GuiClass():
         else:
             return self.inputs[label]['value']
 
-    def set(self, label, value):
-        l = str(len(self.inputs[label]['Entry'].get()))
+    def set(self, label: str, value: int) -> None:
         self.inputs[label]['Entry'].delete(0, END)
-        # self.inputs[label]['Entry'].select_clear()
         self.inputs[label]['Entry'].insert(0, value)
