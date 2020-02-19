@@ -28,7 +28,6 @@ class GuiClass:
     def print(self, label: str, *params) -> None:
         print(params, "\n", type(params), "\n")
         self.printWindow[label]['Text'].config(state=NORMAL)
-        # self.printWindow [label]['Text'].insert (END, "hello\n")
         for item in params:
             self.printWindow[label]['Text'].insert(END, item)
         self.printWindow[label]['Text'].config(state=DISABLED)
@@ -114,6 +113,7 @@ class GuiClass:
         self.root.quit()
 
     def startInput(self) -> None:
+
         for index in range(len(self.prompts)):
             p = self.prompts[index]
             if p['endCol'] != -1:
@@ -164,7 +164,6 @@ class GuiClass:
             okButton = Button(self.root, takefocus=1, text=self.oKButtonInfo['text'])
             okButton.grid(padx='3m', pady='3m', ipadx='2m', ipady='1m', sticky="nesw",
                           row=self.oKButtonInfo['row'], column=self.oKButtonInfo['col'])
-
             okButton.bind("<Return>", self.enterButtonPressed)
             okButton.bind("<Button-1>", self.enterButtonPressed)
 
@@ -172,13 +171,16 @@ class GuiClass:
             cancelButton = Button(self.root, takefocus=1, text=self.cancelButtonInfo['text'])
             cancelButton.grid(padx='3m', pady='3m', ipadx='2m', ipady='1m', sticky="nesw",
                               row=self.cancelButtonInfo['row'], column=self.cancelButtonInfo['col'])
-
             cancelButton.bind("<Return>", self.cancelButtonPressed)
             cancelButton.bind("<Button-1>", self.cancelButtonPressed)
 
         self.root.mainloop()
 
-        self.root.destroy()
+        try:
+            self.root.destroy()
+        except TclError:
+            # usually in the case of user closing the window
+            pass
 
     def getInputs(self, title: str) -> None:
         self.startInput()

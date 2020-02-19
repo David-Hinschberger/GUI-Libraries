@@ -1,6 +1,4 @@
-from typing import List
-
-import GuiClass
+from Python_GUI import GuiClass
 
 
 def addTwoValues(screen):
@@ -61,7 +59,7 @@ def main():
 
     print("Favorite fruit is ", screen.get("Enter your favorite fruit"))
 
-    screen.getInputs("Enter this data", "Title")
+    screen.getInputs("Title")
     int1 = screen.get("int1")
     int2 = screen.get("int2")
 
