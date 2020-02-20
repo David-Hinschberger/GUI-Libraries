@@ -1,6 +1,6 @@
-# import cs160gui4
 from tkinter import *
 from tkinter.ttk import *
+from typing import Union, Iterable
 
 
 class GuiClass:
@@ -21,10 +21,10 @@ class GuiClass:
         self.__useOKButton = False
         self.__useCancelButton = False
 
-    def __getSortedLabels(self):
+    def __getSortedLabels(self) -> Iterable:
         return sorted(list(self.__inputs.keys()), key=lambda x: int(self.__inputs[x]['index']))
 
-    def __refreshInput(self):
+    def __refreshInput(self) -> None:
         sortedLabels = self.__getSortedLabels()
         for label in sortedLabels:
             self.__inputs[label]['value'] = self.__inputs[label]['Entry'].get()
@@ -55,52 +55,6 @@ class GuiClass:
             self.__inputs[label]['value'] = self.__inputs[label]['initValue']
         self.__root.quit()
 
-    def setPrintWindow(self, label: str, startCol: int, startRow: int, endCol: int, endRow: int) -> None:
-        self.__printWindow[label] = {'startCol': startCol, 'startRow': startRow, 'endCol': endCol, 'endRow': endRow}
-
-    def setFunction(self, label: str, col: int, row: int, function) -> None:
-        label = label
-        self.__functionNameToLabel[label[0].lower()+label[1:]] = label
-        self.__functions[label] = {'function': function, 'col': col, 'row': row}
-
-    def setText(self, prompt: str, col: int, row: int, endCol=-1, endRow=-1, align='left') -> None:
-        self.__prompts.append(
-            {'prompt': prompt,
-             'align': align,
-             'col': col,
-             'row': row,
-             'endCol': endCol,
-             'endRow': endRow})
-
-    def setSpacer(self, col: int, row: int, width: int) -> None:
-        temp = {'width': width,
-                'col': col,
-                'row': row}
-        self.__spacers.append(temp)
-
-    def setInputInfo(self, label: str, col: object, row: object, defValue: object, typeOfInput: object) -> None:
-        self.__numOfItems = self.__numOfItems + 1
-        self.__inputs[label] = {
-            'value': defValue[0] if typeOfInput == 'combo' else defValue,
-            'initValue': defValue,
-            'type': typeOfInput,
-            'col': col,
-            'row': row,
-            'index': self.__numOfItems + 1}
-
-    def getInt(self, label: str, col: int, row: int, defValue=0) -> None:
-        self.setInputInfo(label, col, row, defValue, 'int')
-
-    def getString(self, label: str, col: int, row: int, defValue="") -> None:
-        self.setInputInfo(label, col, row, defValue, 'str')
-
-    def getFloat(self, label: str, col: int, row: int, defValue=0.0) -> None:
-        self.setInputInfo(label, col, row, defValue, 'float')
-
-    def getCombobox(self, prompt: str, col: int, row: int, choices: list) -> None:
-        self.setText(prompt, col, row)
-        self.setInputInfo(prompt, col + 1, row, choices, 'combo')
-
     # we go here when the user exits the form and wants to keep the data
     def __buttonPressed(self, event: EventType) -> None:
         # getting the internal name of the widget from the text displayed
@@ -110,10 +64,18 @@ class GuiClass:
         self.__refreshInput()
         self.__functions[name]['function'](self)
 
-    def setTitle(self, title: str):
-        self.__title = title
+    def __setInputHelper(self, label: str, col: int, row: int, defValue: Union[int, float, str, Iterable],
+                         typeOfInput: str) -> None:
+        self.__numOfItems = self.__numOfItems + 1
+        self.__inputs[label] = {
+            'value': defValue[0] if typeOfInput == 'combo' else defValue,
+            'initValue': defValue,
+            'type': typeOfInput,
+            'col': col,
+            'row': row,
+            'index': self.__numOfItems + 1}
 
-    def startInput(self) -> None:
+    def __startInput(self) -> None:
         if self.__title is not None:
             self.__root.title(self.__title)
         if self.__imagePath is not None:
@@ -153,7 +115,8 @@ class GuiClass:
 
         for funcLabel in self.__functions:
             label = self.__functions[funcLabel]
-            label['Button'] = Button(self.__root, takefocus=1, text=funcLabel, name=funcLabel[0].lower()+funcLabel[1:])
+            label['Button'] = Button(self.__root, takefocus=1, text=funcLabel,
+                                     name=funcLabel[0].lower() + funcLabel[1:])
             label['Button'].grid(padx='3m', pady='3m', ipadx='2m', ipady='1m', sticky="NSEW", row=label['row'],
                                  column=label['col'])
             label['Button'].bind("<Return>", self.__buttonPressed)
@@ -175,18 +138,58 @@ class GuiClass:
         #     cancelButton.bind("<Return>", self.cancelButtonPressed)
         #     cancelButton.bind("<Button-1>", self.cancelButtonPressed)
 
+        # Do we want to refresh the input if the window is closed out?
+        self.__root.protocol("WM_DELETE_WINDOW", lambda: (self.__refreshInput(), self.__root.destroy()))
         self.__root.mainloop()
-
         try:
             self.__root.destroy()
         except TclError:
             # usually in the case of user closing the window
             pass
 
-    def getInputs(self) -> None:
-        self.startInput()
+    def setPrintWindow(self, label: str, startCol: int, startRow: int, endCol: int, endRow: int) -> None:
+        self.__printWindow[label] = {'startCol': startCol, 'startRow': startRow, 'endCol': endCol, 'endRow': endRow}
 
-    def get(self, label: str) -> object:
+    def setButton(self, label: str, function: callable, col: int, row: int) -> None:
+        label = label
+        self.__functionNameToLabel[label[0].lower() + label[1:]] = label
+        self.__functions[label] = {'function': function, 'col': col, 'row': row}
+
+    def setText(self, prompt: str, col: int, row: int, endCol: int = -1, endRow: int = -1, align: str = 'left') -> None:
+        self.__prompts.append(
+            {'prompt': prompt,
+             'align': align,
+             'col': col,
+             'row': row,
+             'endCol': endCol,
+             'endRow': endRow})
+
+    def setSpacer(self, col: int, row: int, width: int) -> None:
+        temp = {'width': width,
+                'col': col,
+                'row': row}
+        self.__spacers.append(temp)
+
+    def setIntInput(self, label: str, col: int, row: int, defValue: int = 0) -> None:
+        self.__setInputHelper(label, col, row, defValue, 'int')
+
+    def setStringInput(self, label: str, col: int, row: int, defValue: str = "") -> None:
+        self.__setInputHelper(label, col, row, defValue, 'str')
+
+    def setFloatInput(self, label: str, col: int, row: int, defValue: float = 0.0) -> None:
+        self.__setInputHelper(label, col, row, defValue, 'float')
+
+    def setComboBoxInput(self, prompt: str, col: int, row: int, choices: Iterable) -> None:
+        self.setText(prompt, col, row)
+        self.__setInputHelper(prompt, col + 1, row, choices, 'combo')
+
+    def setTitle(self, title: str) -> None:
+        self.__title = title
+
+    def startGUI(self) -> None:
+        self.__startInput()
+
+    def get(self, label: str) -> Union[int, float, str]:
         if self.__inputs[label]['type'] == 'int':
             return int(self.__inputs[label]['value'])
         elif self.__inputs[label]['type'] == 'float':
@@ -194,6 +197,12 @@ class GuiClass:
         else:
             return self.__inputs[label]['value']
 
-    def set(self, label: str, value: object) -> None:
-        self.__inputs[label]['Entry'].delete(0, END)
-        self.__inputs[label]['Entry'].insert(0, value)
+    def set(self, label: str, value: Union[int, float, str]) -> None:
+        if label in self.__printWindow:
+            self.__printWindow[label]['Text'].config(state=NORMAL)
+            self.__printWindow[label]['Text'].delete(1.0, END)
+            self.__printWindow[label]['Text'].insert(END, value)
+            self.__printWindow[label]['Text'].config(state=DISABLED)
+        else:
+            self.__inputs[label]['Entry'].delete(0, END)
+            self.__inputs[label]['Entry'].insert(0, value)
