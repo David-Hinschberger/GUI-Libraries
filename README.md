@@ -5,3 +5,6 @@ Here is the code base for our project to create simple GUI libraries for student
 The final product will include a Python and Java library.
 
 Some design decisions are being made prior to finalization of usable products.
+
+## License
+This project is licensed under the [MIT License](LICENSE).
