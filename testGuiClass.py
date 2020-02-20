@@ -23,7 +23,8 @@ def originalOption():
     screen.setText("Enter int 1", col=1, row=1)
     screen.getInt("int1", col=2, row=1, defValue=int1)
 
-    screen.getIntV("Enter int 2", "int2", col=1, row=2, defValue=int2)
+    screen.setText("Enter int 2", col=1, row=2)
+    screen.getInt("int2", col=2, row=2, defValue=int2)
 
     screen.setText("Enter float 1", col=1, row=3)
     screen.getFloat("float1", col=2, row=3, defValue=float1)
