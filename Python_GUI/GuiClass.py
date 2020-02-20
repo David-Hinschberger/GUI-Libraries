@@ -1,7 +1,6 @@
 # import cs160gui4
 from tkinter import *
-import tkinter as tk
-from tkinter import ttk
+from tkinter.ttk import *
 
 
 class GuiClass:
@@ -18,17 +17,18 @@ class GuiClass:
         self.__useCancelButton = False
         self.__oKButtonInfo = {}
         self.__cancelButtonInfo = {}
-        self.__root = tk.Tk()
+        self.__root = Tk()
+
+    def __getSortedLabels(self):
+        return sorted(list(self.__inputs.keys()), key=lambda x: int(self.__inputs[x]['index']))
+
+    def __refreshInput(self):
+        sortedLabels = self.__getSortedLabels()
+        for label in sortedLabels:
+            self.__inputs[label]['value'] = self.__inputs[label]['Entry'].get()
 
     def setPrintWindow(self, label: str, startCol: int, startRow: int, endCol: int, endRow: int) -> None:
         self.__printWindow[label] = {'startCol': startCol, 'startRow': startRow, 'endCol': endCol, 'endRow': endRow}
-
-    def print(self, label: str, *params) -> None:
-        print(params, "\n", type(params), "\n")
-        self.__printWindow[label]['Text'].config(state=NORMAL)
-        for item in params:
-            self.__printWindow[label]['Text'].insert(END, item)
-        self.__printWindow[label]['Text'].config(state=DISABLED)
 
     def setFunction(self, label: str, col: int, row: int, function) -> None:
         label = label.lower()
@@ -84,31 +84,22 @@ class GuiClass:
         self.setText(prompt, col, row)
         self.setInputInfo(prompt, col + 1, row, choices, 'combo')
 
-    def getSortedLabels(self):
-        return sorted(list(self.__inputs.keys()), key=lambda x: int(self.__inputs[x]['index']))
-
     # we go here when the user exits the form and wants to keep the data
-    def someOtherButtonPressed(self, event: EventType) -> None:
+    def __buttonPressed(self, event: EventType) -> None:
         # getting the internal name of the widget from the text displayed
         # need a better solution, may not be unique
         # first character in the name is a period - so it's removed
         name = str(event.widget).lower()
         name = name[1:]
-        print(f"{name=}")
-        sortedLabels = self.getSortedLabels()
-        for label in sortedLabels:
-            self.__inputs[label]['value'] = self.__inputs[label]['Entry'].get()
-        # print(self.functions.keys())
+        self.__refreshInput()
         self.__functions[name]['function'](self)
 
-    def enterButtonPressed(self, event: EventType) -> None:
-        sortedLabels = self.getSortedLabels()
-        for label in sortedLabels:
-            self.__inputs[label]['value'] = self.__inputs[label]['Entry'].get()
+    def __enterButtonPressed(self, event: EventType) -> None:
+        self.__refreshInput()
         self.__root.quit()
 
-    def cancelButtonPressed(self, event: EventType) -> None:
-        sortedLabels = self.getSortedLabels()
+    def __cancelButtonPressed(self, event: EventType) -> None:
+        sortedLabels = self.__getSortedLabels()
         for label in sortedLabels:
             self.__inputs[label]['value'] = self.__inputs[label]['initValue']
         self.__root.quit()
@@ -135,11 +126,11 @@ class GuiClass:
             s = self.__spacers[index]
             Label(self.__root, text='', width=s['width']).grid(sticky="NW", row=s['row'], column=s['col'])
 
-        sortedLabels = self.getSortedLabels()
+        sortedLabels = self.__getSortedLabels()
         for label in sortedLabels:
             l = self.__inputs[label]
             if l['type'] == 'combo':
-                l['Entry'] = ttk.Combobox(self.__root, values=l['initValue'], state="readonly")
+                l['Entry'] = Combobox(self.__root, values=l['initValue'], state="readonly")
                 l['Entry'].current(0)
                 l['Entry'].grid(column=l['col'], row=l['row'])
             else:
@@ -201,6 +192,6 @@ class GuiClass:
         else:
             return self.__inputs[label]['value']
 
-    def set(self, label: str, value: int) -> None:
+    def set(self, label: str, value: object) -> None:
         self.__inputs[label]['Entry'].delete(0, END)
         self.__inputs[label]['Entry'].insert(0, value)

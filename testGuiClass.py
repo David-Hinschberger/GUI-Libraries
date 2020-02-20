@@ -7,11 +7,6 @@ def addTwoValues(screen):
     total = int1 + int2
     screen.set("total", total)
 
-    # print ("From addTwoValues ", total)
-    # for index in range(1, 11):
-    #     screen.print("window1", index, "From addTwoValues", format(total, "5d"), format(total + 1, "5d"), "\n")
-
-
 def floatAdd1(screen):
     screen.set("float1", screen.get("float1") + 1)
 
