@@ -186,6 +186,9 @@ class GuiClass:
     def setTitle(self, title: str) -> None:
         self.__title = title
 
+    def setIcon(self, imagePath: str) -> None:
+        self.__imagePath = imagePath
+
     def startGUI(self) -> None:
         self.__startInput()
 
