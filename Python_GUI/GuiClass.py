@@ -17,6 +17,8 @@ class GuiClass:
         self.__oKButtonInfo = {}
         self.__cancelButtonInfo = {}
         self.__root = Tk()
+        # Keeps track of rows added for each column
+        self.__colRowCount = [0, 0, 0]
         # No plans to use in the future.
         self.__useOKButton = False
         self.__useCancelButton = False
@@ -83,12 +85,13 @@ class GuiClass:
 
         for index in range(len(self.__prompts)):
             p = self.__prompts[index]
-            Label(self.__root, text=p['prompt']).grid(sticky="NW", row=p['row'], column=p['col'], padx=5, pady=5)
+            Label(self.__root, text=p['prompt']).grid(sticky="W" if p['align'] == 'left' else 'E', row=p['row'],
+                                                      column=p['col'], padx=5, pady=5)
 
         # write out spacers in grid
         for index in range(len(self.__spacers)):
             s = self.__spacers[index]
-            Label(self.__root, width=s['width']).grid(sticky="NW", row=s['row'], column=s['col'], padx=5, pady=5)
+            Label(self.__root).grid(row=s['row'], column=s['col'], padx=5, pady=5, ipady='1m')
 
         sortedLabels = self.__getSortedLabels()
         for sortedLabel in sortedLabels:
@@ -96,10 +99,10 @@ class GuiClass:
             if label['type'] == 'combo':
                 label['Entry'] = Combobox(self.__root, values=label['initValue'], state="readonly")
                 label['Entry'].current(0)
-                label['Entry'].grid(column=label['col'], row=label['row'])
+                label['Entry'].grid(row=label['row'], column=label['col'], padx=5, pady=5)
             else:
-                label['Entry'] = Entry(self.__root, width=20)
-                label['Entry'].grid(sticky="NW", row=label['row'], column=label['col'], padx=5, pady=5)
+                label['Entry'] = Entry(self.__root, width=23)
+                label['Entry'].grid(row=label['row'], column=label['col'], padx=5, pady=5)
                 label['Entry'].insert(0, label['value'])
 
         for label in list(self.__printWindow.keys()):
@@ -117,8 +120,7 @@ class GuiClass:
             label = self.__functions[funcLabel]
             label['Button'] = Button(self.__root, takefocus=1, text=funcLabel,
                                      name=funcLabel[0].lower() + funcLabel[1:])
-            label['Button'].grid(padx='3m', pady='3m', ipadx='2m', ipady='1m', sticky="NSEW", row=label['row'],
-                                 column=label['col'])
+            label['Button'].grid(padx=5, pady=5, ipady='1m', sticky="NSEW", row=label['row'], column=label['col'])
             label['Button'].bind("<Return>", self.__buttonPressed)
             label['Button'].bind("<Button-1>", self.__buttonPressed)
 
@@ -147,41 +149,51 @@ class GuiClass:
             # usually in the case of user closing the window
             pass
 
-    def setPrintWindow(self, label: str, startCol: int, startRow: int, endCol: int, endRow: int) -> None:
-        self.__printWindow[label] = {'startCol': startCol, 'startRow': startRow, 'endCol': endCol, 'endRow': endRow}
+    def setPrintWindow(self, label: str) -> None:
+        self.__printWindow[label] = {'startCol': 1, 'startRow': max(self.__colRowCount), 'endCol': 4,
+                                     'endRow': max(self.__colRowCount) + 2}
 
-    def setButton(self, label: str, function: callable, col: int, row: int) -> None:
+    def setButton(self, label: str, function: callable) -> None:
         label = label
         self.__functionNameToLabel[label[0].lower() + label[1:]] = label
-        self.__functions[label] = {'function': function, 'col': col, 'row': row}
+        self.__functions[label] = {'function': function, 'col': 3, 'row': self.__colRowCount[2]}
+        self.__colRowCount[2] += 1
 
-    def setText(self, prompt: str, col: int, row: int, endCol: int = -1, endRow: int = -1, align: str = 'left') -> None:
+    def setText(self, prompt: str, align: str = 'left') -> None:
         self.__prompts.append(
             {'prompt': prompt,
              'align': align,
-             'col': col,
-             'row': row,
-             'endCol': endCol,
-             'endRow': endRow})
+             'col': 1,
+             'row': self.__colRowCount[0]})
+        self.__colRowCount[0] += 1
 
-    def setSpacer(self, col: int, row: int, width: int) -> None:
-        temp = {'width': width,
-                'col': col,
-                'row': row}
+    def setSpacer(self, col: int) -> None:
+        temp = {'col': col, 'row': self.__colRowCount[col - 1]}
+        self.__colRowCount[col - 1] += 1
         self.__spacers.append(temp)
 
-    def setIntInput(self, label: str, col: int, row: int, defValue: int = 0) -> None:
-        self.__setInputHelper(label, col, row, defValue, 'int')
+    def setIntInput(self, label: str, defValue: int = 0) -> None:
+        self.__setInputHelper(label, 2, self.__colRowCount[1], defValue, 'int')
+        self.__colRowCount[1] += 1
 
-    def setStringInput(self, label: str, col: int, row: int, defValue: str = "") -> None:
-        self.__setInputHelper(label, col, row, defValue, 'str')
+    def setStringInput(self, label: str, defValue: str = "") -> None:
+        self.__setInputHelper(label, 2, self.__colRowCount[1], defValue, 'str')
+        self.__colRowCount[1] += 1
 
-    def setFloatInput(self, label: str, col: int, row: int, defValue: float = 0.0) -> None:
-        self.__setInputHelper(label, col, row, defValue, 'float')
+    def setFloatInput(self, label: str, defValue: float = 0.0) -> None:
+        self.__setInputHelper(label, 2, self.__colRowCount[1], defValue, 'float')
+        self.__colRowCount[1] += 1
 
-    def setComboBoxInput(self, prompt: str, col: int, row: int, choices: Iterable) -> None:
-        self.setText(prompt, col, row)
-        self.__setInputHelper(prompt, col + 1, row, choices, 'combo')
+    def setComboBoxInput(self, prompt: str, choices: Iterable) -> None:
+        row = max(self.__colRowCount[0], self.__colRowCount[1])
+        self.__prompts.append(
+            {'prompt': prompt,
+             'align': 'left',
+             'col': 1,
+             'row': row})
+        self.__setInputHelper(prompt, 2, row, choices, 'combo')
+        self.__colRowCount[1] = row + 1
+        self.__colRowCount[0] = row + 1
 
     def setTitle(self, title: str) -> None:
         self.__title = title

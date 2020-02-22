@@ -10,7 +10,7 @@ def addTwoValues(screen):
 
 def floatAdd1(screen):
     screen.set("window1", screen.get("float1") + 1)
-    # screen.set("float1", screen.get("float1") + 1)
+    screen.set("float1", screen.get("float1") + 1)
 
 
 def originalOption():
@@ -20,35 +20,30 @@ def originalOption():
 
     screen = GuiClass()
 
-    screen.setText("Testing data entry", col=1, row=0, endCol=2, align='center')
+    screen.setText("Testing data entry", align='center')
+    screen.setSpacer(col=2)
 
-    screen.setText("Enter int 1", col=1, row=1)
-    screen.setIntInput("int1", col=2, row=1, defValue=int1)
+    screen.setText("Enter int 1")
+    screen.setIntInput("int1", defValue=int1)
 
-    screen.setText("Enter int 2", col=1, row=2)
-    screen.setIntInput("int2", col=2, row=2, defValue=int2)
+    screen.setText("Enter int 2")
+    screen.setIntInput("int2", defValue=int2)
 
-    screen.setText("Enter float 1", col=1, row=3)
-    screen.setFloatInput("float1", col=2, row=3, defValue=float1)
+    screen.setText("Enter float 1")
+    screen.setFloatInput("float1", defValue=float1)
 
-    screen.setText("Enter string 1", col=1, row=4)
-    screen.setStringInput("str1", col=2, row=4)
+    screen.setText("Enter string 1")
+    screen.setStringInput("str1")
 
     fruitChoices = ["Apple", "Pear", "Grape", "Orange", 5, 6]
-    screen.setComboBoxInput("Enter your favorite fruit", col=3, row=5, choices=fruitChoices)
+    screen.setComboBoxInput("Enter your favorite fruit", choices=fruitChoices)
+    screen.setButton("add", function=addTwoValues)
+    screen.setButton("Float + 1", function=floatAdd1)
 
-    screen.setSpacer(col=3, row=1, width=2)
-    screen.setSpacer(col=3, row=6, width=2)
-    screen.setButton("add", col=4, row=1, function=addTwoValues)
+    screen.setText("Total")
+    screen.setIntInput("total")
 
-    screen.setSpacer(col=3, row=1, width=2)
-    screen.setSpacer(col=3, row=6, width=2)
-    screen.setButton("Float + 1", col=4, row=2, function=floatAdd1)
-
-    screen.setText("Total", col=1, row=5)
-    screen.setIntInput("total", col=2, row=5)
-
-    screen.setPrintWindow("window1", startCol=1, startRow=7, endCol=4, endRow=9)
+    screen.setPrintWindow("window1")
 
     screen.setTitle("Windows 11")
 
