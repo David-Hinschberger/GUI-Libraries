@@ -84,9 +84,4 @@ def originalOption():
     print("Favorite fruit is ", screen.get("Enter your favorite fruit"))
 
 
-# Need to fill this in with the option without specifying rows and columns
-def secondaryOption():
-    pass
-
-
 originalOption()
