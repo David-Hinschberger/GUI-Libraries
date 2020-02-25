@@ -77,15 +77,22 @@ class GuiClass:
             'row': row,
             'index': self.__numOfItems + 1}
 
+    # window default seems to be 670x640 px
     def __startInput(self) -> None:
         if self.__title is not None:
             self.__root.title(self.__title)
         if self.__imagePath is not None:
             self.__root.iconphoto(True, PhotoImage(file=self.__imagePath))
 
+        Grid.rowconfigure(self.__root, 7, weight=1)
+        Grid.columnconfigure(self.__root, 3, weight=1)
+        Grid.columnconfigure(self.__root, 1, weight=1)
+        Grid.columnconfigure(self.__root, 2, weight=1)
+
+
         for index in range(len(self.__prompts)):
             p = self.__prompts[index]
-            Label(self.__root, text=p['prompt']).grid(sticky="W" if p['align'] == 'left' else 'E', row=p['row'],
+            Label(self.__root, text=p['prompt']).grid(sticky="W" if p['align'] else 'E', row=p['row'],
                                                       column=p['col'], padx=5, pady=5)
 
         # write out spacers in grid
@@ -99,10 +106,10 @@ class GuiClass:
             if label['type'] == 'combo':
                 label['Entry'] = Combobox(self.__root, values=label['initValue'], state="readonly")
                 label['Entry'].current(0)
-                label['Entry'].grid(row=label['row'], column=label['col'], padx=5, pady=5)
+                label['Entry'].grid(sticky='EW', row=label['row'], column=label['col'], padx=5, pady=5)
             else:
                 label['Entry'] = Entry(self.__root, width=23)
-                label['Entry'].grid(row=label['row'], column=label['col'], padx=5, pady=5)
+                label['Entry'].grid(sticky='EW',row=label['row'], column=label['col'], padx=5, pady=5)
                 label['Entry'].insert(0, label['value'])
 
         for label in list(self.__printWindow.keys()):
@@ -112,7 +119,7 @@ class GuiClass:
             pw['Scroll'] = Scrollbar(frame, command=pw['Text'].yview, orient=VERTICAL)
             pw['Text'].config(state=DISABLED, yscrollcommand=pw['Scroll'].set)
             pw['Scroll'].pack(side=RIGHT, fill=Y)
-            pw['Text'].pack()
+            pw['Text'].pack(side=LEFT, fill=BOTH, expand = YES)
             frame.grid(sticky="NSEW", row=pw['startRow'], column=pw['startCol'], padx=5, pady=5,
                        columnspan=(pw['endCol'] - pw['startCol'] + 1))
 
@@ -159,7 +166,7 @@ class GuiClass:
         self.__functions[label] = {'function': function, 'col': 3, 'row': self.__colRowCount[2]}
         self.__colRowCount[2] += 1
 
-    def setText(self, prompt: str, align: str = 'left') -> None:
+    def setText(self, prompt: str, align: bool = True) -> None:
         self.__prompts.append(
             {'prompt': prompt,
              'align': align,

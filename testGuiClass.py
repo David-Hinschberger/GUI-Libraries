@@ -12,6 +12,17 @@ def floatAdd1(screen):
     screen.set("window1", screen.get("float1") + 1)
     screen.set("float1", screen.get("float1") + 1)
 
+def printNums(screen):
+    x = screen.get("int1")
+    y = ''
+    for i in range(x):
+        y += str(i) + "\n"
+    screen.set('window1', y)
+
+def printNums2(screen):
+    x = screen.get("int2")
+    results = [str(i) for i in range(x)]
+    screen.set('window1', ', '.join(results))
 
 def originalOption():
     int1 = 10
@@ -20,7 +31,7 @@ def originalOption():
 
     screen = GuiClass()
 
-    screen.setText("Testing data entry", align='center')
+    screen.setText("Testing data entry", align=False)
     screen.setSpacer(col=2)
 
     screen.setText("Enter int 1")
@@ -39,6 +50,8 @@ def originalOption():
     screen.setComboBoxInput("Enter your favorite fruit", choices=fruitChoices)
     screen.setButton("add", function=addTwoValues)
     screen.setButton("Float + 1", function=floatAdd1)
+    screen.setButton("fizzbuzz until int1", function=printNums)
+    screen.setButton("fizzbuzz until int2", function=printNums2)
 
     screen.setText("Total")
     screen.setIntInput("total")
