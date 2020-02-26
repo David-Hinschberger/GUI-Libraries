@@ -10,75 +10,93 @@ def addTwoValues(screen):
 
 def floatAdd1(screen):
     screen.set("window1", screen.get("float1") + 1)
-    # screen.set("float1", screen.get("float1") + 1)
+    screen.set("float1", screen.get("float1") + 1)
 
 
-def originalOption():
+def fizzBuzz1(screen):
+    y = ''
+    for i in range(1, screen.get("int1")):
+        if i % 3 == 0:
+            y += "Fizz"
+        if i % 5 == 0:
+            y += "Buzz"
+        if len(y) == 0 or y[-1] == '\n':
+            y += str(i)
+        y += '\n'
+    screen.set('window1', y)
+
+
+def fizzBuzz2(screen):
+    results = ["FizzBuzz" if i % (3 * 5) == 0 else "Fizz" if i % 3 == 0 else "Buzz" if i % 5 == 0 else str(i) for i in
+               range(1, screen.get("int2"))]
+    screen.set('window1', ', '.join(results))
+
+
+def main():
     int1 = 10
     int2 = 20
     float1 = 123.45
 
-    screen = GuiClass()
+    GUI = GuiClass()
 
-    screen.setText("Testing data entry", col=1, row=0, endCol=2, align='center')
+    GUI.setText("Testing data entry", col=1, row=0, endCol=2, alignLeft='center')
 
-    screen.setText("Enter int 1", col=1, row=1)
-    screen.setIntInput("int1", col=2, row=1, defValue=int1)
+    GUI.setText("Enter int 1", col=1, row=1)
+    GUI.setIntInput("int1", col=2, row=1, defValue=int1)
 
-    screen.setText("Enter int 2", col=1, row=2)
-    screen.setIntInput("int2", col=2, row=2, defValue=int2)
+    GUI.setText("Enter int 2", col=1, row=2)
+    GUI.setIntInput("int2", col=2, row=2, defValue=int2)
 
-    screen.setText("Enter float 1", col=1, row=3)
-    screen.setFloatInput("float1", col=2, row=3, defValue=float1)
+    GUI.setText("Enter float 1", col=1, row=3)
+    GUI.setFloatInput("float1", col=2, row=3, defValue=float1)
 
-    screen.setText("Enter string 1", col=1, row=4)
-    screen.setStringInput("str1", col=2, row=4)
+    GUI.setText("Enter string 1", col=1, row=4)
+    GUI.setStringInput("str1", col=2, row=4)
 
     fruitChoices = ["Apple", "Pear", "Grape", "Orange", 5, 6]
-    screen.setComboBoxInput("Enter your favorite fruit", col=3, row=5, choices=fruitChoices)
+    GUI.setComboBoxInput("Enter your favorite fruit", col=1, row=6, choices=fruitChoices)
 
-    screen.setSpacer(col=3, row=1, width=2)
-    screen.setSpacer(col=3, row=6, width=2)
-    screen.setButton("add", col=4, row=1, function=addTwoValues)
+    GUI.setSpacer(col=3, row=1, width=2)
+    GUI.setSpacer(col=3, row=6, width=2)
+    GUI.setButton("add", col=3, row=1, function=addTwoValues)
 
-    screen.setSpacer(col=3, row=1, width=2)
-    screen.setSpacer(col=3, row=6, width=2)
-    screen.setButton("Float + 1", col=4, row=2, function=floatAdd1)
+    GUI.setSpacer(col=3, row=1, width=2)
+    GUI.setSpacer(col=3, row=6, width=2)
+    GUI.setButton("Float + 1", col=3, row=2, function=floatAdd1)
+    GUI.setButton("Fizzbuzz until int1 (new lines)", col=3, row=3, function=fizzBuzz1)
+    GUI.setButton("Fizzbuzz until int2 (no new lines)", col=3, row=4, function=fizzBuzz2)
 
-    screen.setText("Total", col=1, row=5)
-    screen.setIntInput("total", col=2, row=5)
+    GUI.setText("Total", col=1, row=5)
+    GUI.setIntInput("total", col=2, row=5)
 
-    screen.setPrintWindow("window1", startCol=1, startRow=7, endCol=4, endRow=9)
+    GUI.setPrintWindow("window1", startCol=1, startRow=7, endCol=4, endRow=9)
 
-    screen.setTitle("Windows 11")
+    GUI.setTitle("Windows 11")
 
     print("Before inputs")
     print("int1 is ", int1)
     print("int2 is ", int2)
-    print("Float is ", screen.get("float1"))
-    print("String is ", screen.get("str1"))
-    print("Total is ", screen.get("total"))
-    print("Numeric total is ", (int1 + int2 + screen.get("float1")))
-    print("Favorite fruit is ", screen.get("Enter your favorite fruit"))
+    print("Float is ", GUI.get("float1"))
+    print("String is ", GUI.get("str1"))
+    print("Total is ", GUI.get("total"))
+    print("Numeric total is ", (int1 + int2 + GUI.get("float1")))
+    print("Favorite fruit is ", GUI.get("Enter your favorite fruit"))
 
-    screen.startGUI()
-    int1 = screen.get("int1")
-    int2 = screen.get("int2")
+    GUI.startGUI()
+    int1 = GUI.get("int1")
+    int2 = GUI.get("int2")
 
     print("\n\nAfter inputs")
     print("int1 is ", int1)
     print("int2 is ", int2)
-    print("Float is ", screen.get("float1"))
-    print("String is ", screen.get("str1"))
-    print("Total is ", screen.get("total"))
-    print("Numeric total is ", (int1 + int2 + screen.get("float1")))
+    print("Float is ", GUI.get("float1"))
+    print("String is ", GUI.get("str1"))
+    print("Total is ", GUI.get("total"))
+    print("Numeric total is ", (int1 + int2 + GUI.get("float1")))
 
-    print("Favorite fruit is ", screen.get("Enter your favorite fruit"))
-
-
-# Need to fill this in with the option without specifying rows and columns
-def secondaryOption():
-    pass
+    print("Favorite fruit is ", GUI.get("Enter your favorite fruit"))
 
 
-originalOption()
+if __name__ == "__main__":
+    main()
+    

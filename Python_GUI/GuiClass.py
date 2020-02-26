@@ -1,5 +1,6 @@
-from tkinter import *
-from tkinter.ttk import *
+from tkinter import PhotoImage, Grid, Text, DISABLED, RIGHT, LEFT, BOTH, Y, YES, VERTICAL, TclError, NORMAL, END, \
+    EventType, Tk
+from tkinter.ttk import Combobox, Label, Frame, Scrollbar, Button, Entry
 from typing import Union, Iterable
 
 
@@ -81,14 +82,20 @@ class GuiClass:
         if self.__imagePath is not None:
             self.__root.iconphoto(True, PhotoImage(file=self.__imagePath))
 
+        Grid.rowconfigure(self.__root, 7, weight=1)
+        Grid.columnconfigure(self.__root, 3, weight=1)
+        Grid.columnconfigure(self.__root, 1, weight=1)
+        Grid.columnconfigure(self.__root, 2, weight=1)
+
         for index in range(len(self.__prompts)):
             p = self.__prompts[index]
-            Label(self.__root, text=p['prompt']).grid(sticky="NW", row=p['row'], column=p['col'], padx=5, pady=5)
+            Label(self.__root, text=p['prompt']).grid(sticky="W" if p['align'] else 'E', row=p['row'],
+                                                      column=p['col'], padx=5, pady=5)
 
         # write out spacers in grid
         for index in range(len(self.__spacers)):
             s = self.__spacers[index]
-            Label(self.__root, width=s['width']).grid(sticky="NW", row=s['row'], column=s['col'], padx=5, pady=5)
+            Label(self.__root).grid(row=s['row'], column=s['col'], padx=5, pady=5, ipady='1m')
 
         sortedLabels = self.__getSortedLabels()
         for sortedLabel in sortedLabels:
@@ -96,10 +103,10 @@ class GuiClass:
             if label['type'] == 'combo':
                 label['Entry'] = Combobox(self.__root, values=label['initValue'], state="readonly")
                 label['Entry'].current(0)
-                label['Entry'].grid(column=label['col'], row=label['row'])
+                label['Entry'].grid(sticky='EW', row=label['row'], column=label['col'], padx=5, pady=5)
             else:
                 label['Entry'] = Entry(self.__root, width=20)
-                label['Entry'].grid(sticky="NW", row=label['row'], column=label['col'], padx=5, pady=5)
+                label['Entry'].grid(sticky='EW', row=label['row'], column=label['col'], padx=5, pady=5)
                 label['Entry'].insert(0, label['value'])
 
         for label in list(self.__printWindow.keys()):
@@ -109,7 +116,7 @@ class GuiClass:
             pw['Scroll'] = Scrollbar(frame, command=pw['Text'].yview, orient=VERTICAL)
             pw['Text'].config(state=DISABLED, yscrollcommand=pw['Scroll'].set)
             pw['Scroll'].pack(side=RIGHT, fill=Y)
-            pw['Text'].pack()
+            pw['Text'].pack(side=LEFT, fill=BOTH, expand=YES)
             frame.grid(sticky="NSEW", row=pw['startRow'], column=pw['startCol'], padx=5, pady=5,
                        columnspan=(pw['endCol'] - pw['startCol'] + 1))
 
@@ -117,8 +124,7 @@ class GuiClass:
             label = self.__functions[funcLabel]
             label['Button'] = Button(self.__root, takefocus=1, text=funcLabel,
                                      name=funcLabel[0].lower() + funcLabel[1:])
-            label['Button'].grid(padx='3m', pady='3m', ipadx='2m', ipady='1m', sticky="NSEW", row=label['row'],
-                                 column=label['col'])
+            label['Button'].grid(padx=5, pady=5, ipady='1m', sticky="NSEW", row=label['row'], column=label['col'])
             label['Button'].bind("<Return>", self.__buttonPressed)
             label['Button'].bind("<Button-1>", self.__buttonPressed)
 
@@ -155,10 +161,11 @@ class GuiClass:
         self.__functionNameToLabel[label[0].lower() + label[1:]] = label
         self.__functions[label] = {'function': function, 'col': col, 'row': row}
 
-    def setText(self, prompt: str, col: int, row: int, endCol: int = -1, endRow: int = -1, align: str = 'left') -> None:
+    def setText(self, prompt: str, col: int, row: int, endCol: int = -1, endRow: int = -1,
+                alignLeft: str = 'left') -> None:
         self.__prompts.append(
             {'prompt': prompt,
-             'align': align,
+             'align': alignLeft,
              'col': col,
              'row': row,
              'endCol': endCol,
