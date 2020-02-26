@@ -12,76 +12,85 @@ def floatAdd1(screen):
     screen.set("window1", screen.get("float1") + 1)
     screen.set("float1", screen.get("float1") + 1)
 
-def printNums(screen):
-    x = screen.get("int1")
+
+def fizzBuzz1(screen):
     y = ''
-    for i in range(x):
-        y += str(i) + "\n"
+    for i in range(1, screen.get("int1")):
+        if i % 3 == 0:
+            y += "Fizz"
+        if i % 5 == 0:
+            y += "Buzz"
+        if len(y) == 0 or y[-1] == '\n':
+            y += str(i)
+        y += '\n'
     screen.set('window1', y)
 
-def printNums2(screen):
-    x = screen.get("int2")
-    results = [str(i) for i in range(x)]
+
+def fizzBuzz2(screen):
+    results = ["FizzBuzz" if i % (3 * 5) == 0 else "Fizz" if i % 3 == 0 else "Buzz" if i % 5 == 0 else str(i) for i in
+               range(1, screen.get("int2"))]
     screen.set('window1', ', '.join(results))
 
-def originalOption():
+
+def main():
     int1 = 10
     int2 = 20
     float1 = 123.45
 
-    screen = GuiClass()
+    GUI = GuiClass()
 
-    screen.setText("Testing data entry", align=False)
-    screen.setSpacer(col=2)
+    GUI.setText("Testing data entry", alignLeft=False)
+    GUI.setSpacer(col=2)
 
-    screen.setText("Enter int 1")
-    screen.setIntInput("int1", defValue=int1)
+    GUI.setText("Enter int 1")
+    GUI.setIntInput("int1", defValue=int1)
 
-    screen.setText("Enter int 2")
-    screen.setIntInput("int2", defValue=int2)
+    GUI.setText("Enter int 2")
+    GUI.setIntInput("int2", defValue=int2)
 
-    screen.setText("Enter float 1")
-    screen.setFloatInput("float1", defValue=float1)
+    GUI.setText("Enter float 1")
+    GUI.setFloatInput("float1", defValue=float1)
 
-    screen.setText("Enter string 1")
-    screen.setStringInput("str1")
+    GUI.setText("Enter string 1")
+    GUI.setStringInput("str1")
 
     fruitChoices = ["Apple", "Pear", "Grape", "Orange", 5, 6]
-    screen.setComboBoxInput("Enter your favorite fruit", choices=fruitChoices)
-    screen.setButton("add", function=addTwoValues)
-    screen.setButton("Float + 1", function=floatAdd1)
-    screen.setButton("fizzbuzz until int1", function=printNums)
-    screen.setButton("fizzbuzz until int2", function=printNums2)
+    GUI.setComboBoxInput("Enter your favorite fruit", choices=fruitChoices)
+    GUI.setButton("add", function=addTwoValues)
+    GUI.setButton("Float + 1", function=floatAdd1)
+    GUI.setButton("Fizzbuzz until int1 (new lines)", function=fizzBuzz1)
+    GUI.setButton("Fizzbuzz until int2 (no new lines)", function=fizzBuzz2)
 
-    screen.setText("Total")
-    screen.setIntInput("total")
+    GUI.setText("Total")
+    GUI.setIntInput("total")
 
-    screen.setPrintWindow("window1")
+    GUI.setPrintWindow("window1")
 
-    screen.setTitle("Windows 11")
+    GUI.setTitle("Windows 11")
 
     print("Before inputs")
     print("int1 is ", int1)
     print("int2 is ", int2)
-    print("Float is ", screen.get("float1"))
-    print("String is ", screen.get("str1"))
-    print("Total is ", screen.get("total"))
-    print("Numeric total is ", (int1 + int2 + screen.get("float1")))
-    print("Favorite fruit is ", screen.get("Enter your favorite fruit"))
+    print("Float is ", GUI.get("float1"))
+    print("String is ", GUI.get("str1"))
+    print("Total is ", GUI.get("total"))
+    print("Numeric total is ", (int1 + int2 + GUI.get("float1")))
+    print("Favorite fruit is ", GUI.get("Enter your favorite fruit"))
 
-    screen.startGUI()
-    int1 = screen.get("int1")
-    int2 = screen.get("int2")
+    GUI.startGUI()
+    int1 = GUI.get("int1")
+    int2 = GUI.get("int2")
 
     print("\n\nAfter inputs")
     print("int1 is ", int1)
     print("int2 is ", int2)
-    print("Float is ", screen.get("float1"))
-    print("String is ", screen.get("str1"))
-    print("Total is ", screen.get("total"))
-    print("Numeric total is ", (int1 + int2 + screen.get("float1")))
+    print("Float is ", GUI.get("float1"))
+    print("String is ", GUI.get("str1"))
+    print("Total is ", GUI.get("total"))
+    print("Numeric total is ", (int1 + int2 + GUI.get("float1")))
 
-    print("Favorite fruit is ", screen.get("Enter your favorite fruit"))
+    print("Favorite fruit is ", GUI.get("Enter your favorite fruit"))
 
 
-originalOption()
+if __name__ == "__main__":
+    main()

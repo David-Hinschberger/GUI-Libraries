@@ -1,5 +1,6 @@
-from tkinter import *
-from tkinter.ttk import *
+from tkinter import PhotoImage, Grid, Text, DISABLED, RIGHT, LEFT, BOTH, Y, YES, VERTICAL, TclError, NORMAL, END, \
+    EventType, Tk
+from tkinter.ttk import Combobox, Label, Frame, Scrollbar, Button, Entry
 from typing import Union, Iterable
 
 
@@ -89,7 +90,6 @@ class GuiClass:
         Grid.columnconfigure(self.__root, 1, weight=1)
         Grid.columnconfigure(self.__root, 2, weight=1)
 
-
         for index in range(len(self.__prompts)):
             p = self.__prompts[index]
             Label(self.__root, text=p['prompt']).grid(sticky="W" if p['align'] else 'E', row=p['row'],
@@ -109,7 +109,7 @@ class GuiClass:
                 label['Entry'].grid(sticky='EW', row=label['row'], column=label['col'], padx=5, pady=5)
             else:
                 label['Entry'] = Entry(self.__root, width=23)
-                label['Entry'].grid(sticky='EW',row=label['row'], column=label['col'], padx=5, pady=5)
+                label['Entry'].grid(sticky='EW', row=label['row'], column=label['col'], padx=5, pady=5)
                 label['Entry'].insert(0, label['value'])
 
         for label in list(self.__printWindow.keys()):
@@ -119,7 +119,7 @@ class GuiClass:
             pw['Scroll'] = Scrollbar(frame, command=pw['Text'].yview, orient=VERTICAL)
             pw['Text'].config(state=DISABLED, yscrollcommand=pw['Scroll'].set)
             pw['Scroll'].pack(side=RIGHT, fill=Y)
-            pw['Text'].pack(side=LEFT, fill=BOTH, expand = YES)
+            pw['Text'].pack(side=LEFT, fill=BOTH, expand=YES)
             frame.grid(sticky="NSEW", row=pw['startRow'], column=pw['startCol'], padx=5, pady=5,
                        columnspan=(pw['endCol'] - pw['startCol'] + 1))
 
@@ -166,10 +166,10 @@ class GuiClass:
         self.__functions[label] = {'function': function, 'col': 3, 'row': self.__colRowCount[2]}
         self.__colRowCount[2] += 1
 
-    def setText(self, prompt: str, align: bool = True) -> None:
+    def setText(self, prompt: str, alignLeft: bool = True) -> None:
         self.__prompts.append(
             {'prompt': prompt,
-             'align': align,
+             'align': alignLeft,
              'col': 1,
              'row': self.__colRowCount[0]})
         self.__colRowCount[0] += 1
