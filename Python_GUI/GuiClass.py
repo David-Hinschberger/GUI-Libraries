@@ -120,8 +120,11 @@ class GuiClass:
             pw['Text'].config(state=DISABLED, yscrollcommand=pw['Scroll'].set)
             pw['Scroll'].pack(side=RIGHT, fill=Y)
             pw['Text'].pack(side=LEFT, fill=BOTH, expand=YES)
-            frame.grid(sticky="NSEW", row=pw['startRow'], column=pw['startCol'], padx=5, pady=5,
+            frame.grid(sticky="NSEW", row=max(self.__colRowCount), column=pw['startCol'], padx=5, pady=5,
                        columnspan=(pw['endCol'] - pw['startCol'] + 1))
+            Grid.rowconfigure(self.__root, max(self.__colRowCount), weight=1)
+            for i in range(len(self.__colRowCount)):
+                self.__colRowCount[i] += 1
 
         for funcLabel in self.__functions:
             label = self.__functions[funcLabel]
@@ -157,8 +160,7 @@ class GuiClass:
             pass
 
     def setPrintWindow(self, label: str) -> None:
-        self.__printWindow[label] = {'startCol': 1, 'startRow': max(self.__colRowCount), 'endCol': 4,
-                                     'endRow': max(self.__colRowCount) + 2}
+        self.__printWindow[label] = {'startCol': 1, 'endCol': 4}
 
     def setButton(self, label: str, function: callable) -> None:
         label = label
@@ -213,6 +215,7 @@ class GuiClass:
 
     def getStr(self, label: str) -> str:
         if label not in self.__inputs:
+            # ignore last char which would be a newline
             return self.__printWindow[label]['Text'].get(1.0, END)[0:-1]
         else:
             return self.__inputs[label]['value']
@@ -223,12 +226,14 @@ class GuiClass:
     def getFloat(self, label: str) -> float:
         return float(self.__inputs[label]['value'])
 
-    def set(self, label: str, value: Union[int, float, str]) -> None:
+    def set(self, label: str, value: Union[int, float, str], append: bool = False) -> None:
         if label in self.__printWindow:
             self.__printWindow[label]['Text'].config(state=NORMAL)
-            self.__printWindow[label]['Text'].delete(1.0, END)
+            if not append:
+                self.__printWindow[label]['Text'].delete(1.0, END)
             self.__printWindow[label]['Text'].insert(END, value)
             self.__printWindow[label]['Text'].config(state=DISABLED)
         else:
-            self.__inputs[label]['Entry'].delete(0, END)
+            if not append:
+                self.__inputs[label]['Entry'].delete(0, END)
             self.__inputs[label]['Entry'].insert(0, value)
