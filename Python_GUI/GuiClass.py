@@ -1,5 +1,5 @@
 from tkinter import PhotoImage, Grid, Text, DISABLED, RIGHT, LEFT, BOTH, Y, YES, VERTICAL, TclError, NORMAL, END, \
-    EventType, Tk
+    EventType, Tk, WORD
 from tkinter.ttk import Combobox, Label, Frame, Scrollbar, Button, Entry
 from typing import Union, Iterable
 
@@ -85,7 +85,7 @@ class GuiClass:
         if self.__imagePath is not None:
             self.__root.iconphoto(True, PhotoImage(file=self.__imagePath))
 
-        Grid.rowconfigure(self.__root, 7, weight=1)
+        Grid.rowconfigure(self.__root, max(self.__colRowCount), weight=1)
         Grid.columnconfigure(self.__root, 3, weight=1)
         Grid.columnconfigure(self.__root, 1, weight=1)
         Grid.columnconfigure(self.__root, 2, weight=1)
@@ -115,7 +115,7 @@ class GuiClass:
         for label in list(self.__printWindow.keys()):
             frame = Frame(self.__root)
             pw = self.__printWindow[label]
-            pw['Text'] = Text(frame)
+            pw['Text'] = Text(frame, wrap=WORD)
             pw['Scroll'] = Scrollbar(frame, command=pw['Text'].yview, orient=VERTICAL)
             pw['Text'].config(state=DISABLED, yscrollcommand=pw['Scroll'].set)
             pw['Scroll'].pack(side=RIGHT, fill=Y)
@@ -211,13 +211,17 @@ class GuiClass:
     def startGUI(self) -> None:
         self.__startInput()
 
-    def get(self, label: str) -> Union[int, float, str]:
-        if self.__inputs[label]['type'] == 'int':
-            return int(self.__inputs[label]['value'])
-        elif self.__inputs[label]['type'] == 'float':
-            return float(self.__inputs[label]['value'])
+    def getStr(self, label: str) -> str:
+        if label not in self.__inputs:
+            return self.__printWindow[label]['Text'].get(1.0, END)[0:-1]
         else:
             return self.__inputs[label]['value']
+
+    def getInt(self, label: str) -> int:
+        return int(self.__inputs[label]['value'])
+
+    def getFloat(self, label: str) -> float:
+        return float(self.__inputs[label]['value'])
 
     def set(self, label: str, value: Union[int, float, str]) -> None:
         if label in self.__printWindow:
