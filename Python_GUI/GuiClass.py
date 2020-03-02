@@ -13,7 +13,7 @@ class GuiClass:
         self.__functionNameToLabel = {}
         self.__printWindow = {}
         self.__spacers = []
-        self.__prompts = []
+        self.__prompts = {}
         self.__numOfItems = 0
         self.__oKButtonInfo = {}
         self.__cancelButtonInfo = {}
@@ -90,10 +90,11 @@ class GuiClass:
         Grid.columnconfigure(self.__root, 1, weight=1)
         Grid.columnconfigure(self.__root, 2, weight=1)
 
-        for index in range(len(self.__prompts)):
-            p = self.__prompts[index]
-            Label(self.__root, text=p['prompt']).grid(sticky="W" if p['align'] else 'E', row=p['row'],
-                                                      column=p['col'], padx=5, pady=5)
+        for p in self.__prompts.keys():
+            self.__prompts[p]['Entry'] = Label(self.__root, text=self.__prompts[p]['prompt'])
+            self.__prompts[p]['Entry'].grid(sticky="W" if self.__prompts[p]['alignLeft'] else 'E',
+                                            row=self.__prompts[p]['row'], column=self.__prompts[p]['col'], padx=5,
+                                            pady=5)
 
         # write out spacers in grid
         for index in range(len(self.__spacers)):
@@ -168,12 +169,11 @@ class GuiClass:
         self.__functions[label] = {'function': function, 'col': 3, 'row': self.__colRowCount[2]}
         self.__colRowCount[2] += 1
 
-    def setText(self, prompt: str, alignLeft: bool = True) -> None:
-        self.__prompts.append(
-            {'prompt': prompt,
-             'align': alignLeft,
-             'col': 1,
-             'row': self.__colRowCount[0]})
+    def setText(self, identifier: str, prompt: str, alignLeft: bool = True) -> None:
+        self.__prompts[identifier] = {'prompt': prompt,
+                                      'alignLeft': alignLeft,
+                                      'col': 1,
+                                      'row': self.__colRowCount[0]}
         self.__colRowCount[0] += 1
 
     def setSpacer(self, col: int) -> None:
@@ -195,12 +195,11 @@ class GuiClass:
 
     def setComboBoxInput(self, prompt: str, choices: Iterable) -> None:
         row = max(self.__colRowCount[0], self.__colRowCount[1])
-        self.__prompts.append(
-            {'prompt': prompt,
-             'align': 'left',
-             'col': 1,
-             'row': row})
-        self.__setInputHelper(prompt, 2, row, choices, 'combo')
+        self.__prompts[prompt] = {'prompt': prompt,
+                                  'align': 'left',
+                                  'col': 1,
+                                  'row': row}
+        self.__setInputHelper(f"__{prompt}__", 2, row, choices, 'combo')
         self.__colRowCount[1] = row + 1
         self.__colRowCount[0] = row + 1
 
@@ -214,9 +213,11 @@ class GuiClass:
         self.__startInput()
 
     def getStr(self, label: str) -> str:
-        if label not in self.__inputs:
+        if label in self.__printWindow:
             # ignore last char which would be a newline
             return self.__printWindow[label]['Text'].get(1.0, END)[0:-1]
+        elif label in self.__prompts:
+            return self.__prompts[label]['Entry']['text']
         else:
             return self.__inputs[label]['value']
 
@@ -233,7 +234,21 @@ class GuiClass:
                 self.__printWindow[label]['Text'].delete(1.0, END)
             self.__printWindow[label]['Text'].insert(END, value)
             self.__printWindow[label]['Text'].config(state=DISABLED)
+        elif label in self.__prompts:
+            if append:
+                value = self.__prompts[label]['Entry']['text'] + value
+            self.__prompts[label]['Entry'].configure(text=value)
         else:
             if not append:
                 self.__inputs[label]['Entry'].delete(0, END)
             self.__inputs[label]['Entry'].insert(0, value)
+
+    def clear(self, label: str) -> None:
+        if label in self.__printWindow:
+            self.__printWindow[label]['Text'].config(state=NORMAL)
+            self.__printWindow[label]['Text'].delete(1.0, END)
+            self.__printWindow[label]['Text'].config(state=DISABLED)
+        elif label in self.__prompts:
+            self.__prompts[label]['Entry'].configure(text="")
+        else:
+            self.__inputs[label]['Entry'].delete(0, END)
