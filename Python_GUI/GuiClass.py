@@ -67,8 +67,8 @@ class GuiClass:
         self.__refreshInput()
         self.__functions[name]['function'](self)
 
-    def __setInputHelper(self, label: str, col: int, row: int, defValue: Union[int, float, str, Iterable],
-                         typeOfInput: str) -> None:
+    def __inputHelper(self, label: str, col: int, row: int, defValue: Union[int, float, str, Iterable],
+                      typeOfInput: str) -> None:
         self.__numOfItems = self.__numOfItems + 1
         self.__inputs[label] = {
             'value': defValue[0] if typeOfInput == 'combo' else defValue,
@@ -160,53 +160,53 @@ class GuiClass:
             # usually in the case of user closing the window
             pass
 
-    def setPrintWindow(self, label: str) -> None:
+    def addPrintWindow(self, label: str) -> None:
         self.__printWindow[label] = {'startCol': 1, 'endCol': 4}
 
-    def setButton(self, label: str, function: callable) -> None:
+    def addButton(self, label: str, function: callable) -> None:
         label = label
         self.__functionNameToLabel[label[0].lower() + label[1:]] = label
         self.__functions[label] = {'function': function, 'col': 3, 'row': self.__colRowCount[2]}
         self.__colRowCount[2] += 1
 
-    def setText(self, identifier: str, prompt: str, alignLeft: bool = True) -> None:
+    def addText(self, identifier: str, prompt: str, alignLeft: bool = True) -> None:
         self.__prompts[identifier] = {'prompt': prompt,
                                       'alignLeft': alignLeft,
                                       'col': 1,
                                       'row': self.__colRowCount[0]}
         self.__colRowCount[0] += 1
 
-    def setSpacer(self, col: int) -> None:
+    def addSpacer(self, col: int) -> None:
         temp = {'col': col, 'row': self.__colRowCount[col - 1]}
         self.__colRowCount[col - 1] += 1
         self.__spacers.append(temp)
 
-    def setIntInput(self, label: str, defValue: int = 0) -> None:
-        self.__setInputHelper(label, 2, self.__colRowCount[1], defValue, 'int')
+    def addIntInput(self, label: str, defValue: int = 0) -> None:
+        self.__inputHelper(label, 2, self.__colRowCount[1], defValue, 'int')
         self.__colRowCount[1] += 1
 
-    def setStringInput(self, label: str, defValue: str = "") -> None:
-        self.__setInputHelper(label, 2, self.__colRowCount[1], defValue, 'str')
+    def addStringInput(self, label: str, defValue: str = "") -> None:
+        self.__inputHelper(label, 2, self.__colRowCount[1], defValue, 'str')
         self.__colRowCount[1] += 1
 
-    def setFloatInput(self, label: str, defValue: float = 0.0) -> None:
-        self.__setInputHelper(label, 2, self.__colRowCount[1], defValue, 'float')
+    def addFloatInput(self, label: str, defValue: float = 0.0) -> None:
+        self.__inputHelper(label, 2, self.__colRowCount[1], defValue, 'float')
         self.__colRowCount[1] += 1
 
-    def setComboBoxInput(self, prompt: str, choices: Iterable) -> None:
+    def addComboBoxInput(self, prompt: str, choices: Iterable) -> None:
         row = max(self.__colRowCount[0], self.__colRowCount[1])
         self.__prompts[prompt] = {'prompt': prompt,
                                   'align': 'left',
                                   'col': 1,
                                   'row': row}
-        self.__setInputHelper(f"__{prompt}__", 2, row, choices, 'combo')
+        self.__inputHelper(f"__{prompt}__", 2, row, choices, 'combo')
         self.__colRowCount[1] = row + 1
         self.__colRowCount[0] = row + 1
 
-    def setTitle(self, title: str) -> None:
+    def addTitle(self, title: str) -> None:
         self.__title = title
 
-    def setIcon(self, imagePath: str) -> None:
+    def addIcon(self, imagePath: str) -> None:
         self.__imagePath = imagePath
 
     def startGUI(self) -> None:

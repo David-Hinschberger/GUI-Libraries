@@ -39,34 +39,34 @@ def main():
 
     GUI = GuiClass()
 
-    GUI.setText("Testing data entry", alignLeft=False)
-    GUI.setSpacer(col=2)
+    GUI.addText("Testing data entry", alignLeft=False)
+    GUI.addSpacer(col=2)
 
-    GUI.setText("Enter int 1")
-    GUI.setIntInput("int1", defValue=int1)
+    GUI.addText("Enter int 1")
+    GUI.addIntInput("int1", defValue=int1)
 
-    GUI.setText("Enter int 2")
-    GUI.setIntInput("int2", defValue=int2)
+    GUI.addText("Enter int 2")
+    GUI.addIntInput("int2", defValue=int2)
 
-    GUI.setText("Enter float 1")
-    GUI.setFloatInput("float1", defValue=float1)
+    GUI.addText("Enter float 1")
+    GUI.addFloatInput("float1", defValue=float1)
 
-    GUI.setText("Enter string 1")
-    GUI.setStringInput("str1")
+    GUI.addText("Enter string 1")
+    GUI.addStringInput("str1")
 
     fruitChoices = ["Apple", "Pear", "Grape", "Orange", 5, 6]
-    GUI.setComboBoxInput("Enter your favorite fruit", choices=fruitChoices)
-    GUI.setButton("add", function=addTwoValues)
-    GUI.setButton("Float + 1", function=floatAdd1)
-    GUI.setButton("Fizzbuzz until int1 (new lines)", function=fizzBuzz1)
-    GUI.setButton("Fizzbuzz until int2 (no new lines)", function=fizzBuzz2)
+    GUI.addComboBoxInput("Enter your favorite fruit", choices=fruitChoices)
+    GUI.addButton("add", function=addTwoValues)
+    GUI.addButton("Float + 1", function=floatAdd1)
+    GUI.addButton("Fizzbuzz until int1 (new lines)", function=fizzBuzz1)
+    GUI.addButton("Fizzbuzz until int2 (no new lines)", function=fizzBuzz2)
 
-    GUI.setText("Total")
-    GUI.setIntInput("total")
+    GUI.addText("Total")
+    GUI.addIntInput("total")
 
-    GUI.setPrintWindow("window1")
+    GUI.addPrintWindow("window1")
 
-    GUI.setTitle("Windows 11")
+    GUI.addTitle("Windows 11")
 
     print("Before inputs")
     print("int1 is ", int1)
