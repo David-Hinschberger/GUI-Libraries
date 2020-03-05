@@ -78,6 +78,32 @@ class GuiClass:
             'row': row,
             'index': self.__numOfItems + 1}
 
+    @staticmethod
+    def __validateFloat(value_if_allowed: str) -> bool:
+        if len(value_if_allowed) == 0:
+            return True
+        if value_if_allowed:
+            try:
+                float(value_if_allowed)
+                return True
+            except ValueError:
+                return False
+        else:
+            return False
+
+    @staticmethod
+    def __validateInt(value_if_allowed: str) -> bool:
+        if len(value_if_allowed) == 0:
+            return True
+        if value_if_allowed:
+            try:
+                int(value_if_allowed)
+                return True
+            except ValueError:
+                return False
+        else:
+            return False
+
     # window default seems to be 670x640 px
     def __startInput(self) -> None:
         if self.__title is not None:
@@ -109,7 +135,10 @@ class GuiClass:
                 label['Entry'].current(0)
                 label['Entry'].grid(sticky='EW', row=label['row'], column=label['col'], padx=5, pady=5)
             else:
-                label['Entry'] = Entry(self.__root, width=23)
+                # verify command
+                vcmd = (self.__root.register(self.__validateFloat), '%P') if label['type'] == 'float' else (
+                    self.__root.register(self.__validateInt), '%P') if label['type'] == 'int' else None
+                label['Entry'] = Entry(self.__root, validate='key', validatecommand=vcmd, width=23)
                 label['Entry'].grid(sticky='EW', row=label['row'], column=label['col'], padx=5, pady=5)
                 label['Entry'].insert(0, label['value'])
 
@@ -196,7 +225,7 @@ class GuiClass:
     def addComboBoxInput(self, prompt: str, choices: Iterable) -> None:
         row = max(self.__colRowCount[0], self.__colRowCount[1])
         self.__prompts[prompt] = {'prompt': prompt,
-                                  'align': 'left',
+                                  'alignLeft': True,
                                   'col': 1,
                                   'row': row}
         self.__inputHelper(f"__{prompt}__", 2, row, choices, 'combo')
@@ -216,16 +245,42 @@ class GuiClass:
         if label in self.__printWindow:
             # ignore last char which would be a newline
             return self.__printWindow[label]['Text'].get(1.0, END)[0:-1]
-        elif label in self.__prompts:
-            return self.__prompts[label]['Entry']['text']
-        else:
+        elif f"__{label}__" in self.__inputs:
+            return self.__inputs[f"__{label}__"]['value']
+        elif label in self.__inputs:
             return self.__inputs[label]['value']
+        else:
+            return self.__prompts[label]['Entry']['text']
 
     def getInt(self, label: str) -> int:
-        return int(self.__inputs[label]['value'])
+        try:
+            if label in self.__printWindow:
+                # ignore last char which would be a newline
+                return int(self.__printWindow[label]['Text'].get(1.0, END)[0:-1])
+            elif f"__{label}__" in self.__inputs:
+                return int(self.__inputs[f"__{label}__"]['value'])
+            elif label in self.__inputs:
+                return int(self.__inputs[label]['value'])
+            else:
+                return int(self.__prompts[label]['Entry']['text'])
+        except ValueError:
+            retVal = 0
+        return retVal
 
     def getFloat(self, label: str) -> float:
-        return float(self.__inputs[label]['value'])
+        try:
+            if label in self.__printWindow:
+                # ignore last char which would be a newline
+                return float(self.__printWindow[label]['Text'].get(1.0, END)[0:-1])
+            elif f"__{label}__" in self.__inputs:
+                return float(self.__inputs[f"__{label}__"]['value'])
+            elif label in self.__inputs:
+                return float(self.__inputs[label]['value'])
+            else:
+                return float(self.__prompts[label]['Entry']['text'])
+        except ValueError:
+            retVal = 0
+        return retVal
 
     def set(self, label: str, value: Union[int, float, str], append: bool = False) -> None:
         if label in self.__printWindow:
