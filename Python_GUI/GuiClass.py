@@ -1,5 +1,4 @@
-from tkinter import PhotoImage, Grid, Text, DISABLED, RIGHT, LEFT, BOTH, Y, YES, VERTICAL, TclError, NORMAL, END, \
-    EventType, Tk, WORD
+from tkinter import PhotoImage, Grid, Text, TclError, EventType, Tk
 from tkinter.ttk import Combobox, Label, Frame, Scrollbar, Button, Entry
 from typing import Union, Iterable
 
@@ -14,7 +13,6 @@ class GuiClass:
         self.__printWindow = {}
         self.__spacers = []
         self.__prompts = {}
-        self.__numOfItems = 0
         self.__root = Tk()
         # Keeps track of rows added for each column
         self.__colRowCount = [0, 0, 0]
@@ -27,18 +25,6 @@ class GuiClass:
         for label in sortedLabels:
             self.__inputs[label]['value'] = self.__inputs[label]['Entry'].get()
 
-    # No plans to use in the future.
-    def __enterButtonPressed(self) -> None:
-        self.__refreshInput()
-        self.__root.quit()
-
-    # No plans to use in the future.
-    def __cancelButtonPressed(self) -> None:
-        sortedLabels = self.__getSortedLabels()
-        for label in sortedLabels:
-            self.__inputs[label]['value'] = self.__inputs[label]['initValue']
-        self.__root.quit()
-
     # we go here when the user exits the form and wants to keep the data
     def __buttonPressed(self, event: EventType) -> None:
         # getting the internal name of the widget from the text displayed
@@ -50,14 +36,13 @@ class GuiClass:
 
     def __inputHelper(self, label: str, col: int, row: int, defValue: Union[int, float, str, Iterable],
                       typeOfInput: str) -> None:
-        self.__numOfItems = self.__numOfItems + 1
         self.__inputs[label] = {
             'value': defValue[0] if typeOfInput == 'combo' else defValue,
             'initValue': defValue,
             'type': typeOfInput,
             'col': col,
             'row': row,
-            'index': self.__numOfItems + 1}
+            'index': len(self.__inputs) + 1}
 
     @staticmethod
     def __validateFloat(value_if_allowed: str) -> bool:
@@ -126,11 +111,11 @@ class GuiClass:
         for label in list(self.__printWindow.keys()):
             frame = Frame(self.__root)
             pw = self.__printWindow[label]
-            pw['Text'] = Text(frame, wrap=WORD)
-            pw['Scroll'] = Scrollbar(frame, command=pw['Text'].yview, orient=VERTICAL)
-            pw['Text'].config(state=DISABLED, yscrollcommand=pw['Scroll'].set)
-            pw['Scroll'].pack(side=RIGHT, fill=Y)
-            pw['Text'].pack(side=LEFT, fill=BOTH, expand=YES)
+            pw['Text'] = Text(frame, wrap="word")
+            pw['Scroll'] = Scrollbar(frame, command=pw['Text'].yview, orient="vertical")
+            pw['Text'].config(state="disabled", yscrollcommand=pw['Scroll'].set)
+            pw['Scroll'].pack(side="right", fill="y")
+            pw['Text'].pack(side="left", fill="both", expand="yes")
             frame.grid(sticky="NSEW", row=max(self.__colRowCount), column=pw['startCol'], padx=5, pady=5,
                        columnspan=(pw['endCol'] - pw['startCol'] + 1))
             Grid.rowconfigure(self.__root, max(self.__colRowCount), weight=1)
@@ -225,7 +210,7 @@ class GuiClass:
     def getStr(self, label: str) -> str:
         if label in self.__printWindow:
             # ignore last char which would be a newline
-            return self.__printWindow[label]['Text'].get(1.0, END)[0:-1]
+            return self.__printWindow[label]['Text'].get(1.0, "end")[0:-1]
         elif f"__{label}__" in self.__inputs:
             return self.__inputs[f"__{label}__"]['value']
         elif label in self.__inputs:
@@ -237,7 +222,7 @@ class GuiClass:
         try:
             if label in self.__printWindow:
                 # ignore last char which would be a newline
-                return int(self.__printWindow[label]['Text'].get(1.0, END)[0:-1])
+                return int(self.__printWindow[label]['Text'].get(1.0, "end")[0:-1])
             elif f"__{label}__" in self.__inputs:
                 return int(self.__inputs[f"__{label}__"]['value'])
             elif label in self.__inputs:
@@ -252,7 +237,7 @@ class GuiClass:
         try:
             if label in self.__printWindow:
                 # ignore last char which would be a newline
-                return float(self.__printWindow[label]['Text'].get(1.0, END)[0:-1])
+                return float(self.__printWindow[label]['Text'].get(1.0, "end")[0:-1])
             elif f"__{label}__" in self.__inputs:
                 return float(self.__inputs[f"__{label}__"]['value'])
             elif label in self.__inputs:
@@ -265,26 +250,26 @@ class GuiClass:
 
     def set(self, label: str, value: Union[int, float, str], append: bool = False) -> None:
         if label in self.__printWindow:
-            self.__printWindow[label]['Text'].config(state=NORMAL)
+            self.__printWindow[label]['Text'].config(state="normal")
             if not append:
-                self.__printWindow[label]['Text'].delete(1.0, END)
-            self.__printWindow[label]['Text'].insert(END, value)
-            self.__printWindow[label]['Text'].config(state=DISABLED)
+                self.__printWindow[label]['Text'].delete(1.0, "end")
+            self.__printWindow[label]['Text'].insert("end", value)
+            self.__printWindow[label]['Text'].config(state="disabled")
         elif label in self.__prompts:
             if append:
                 value = self.__prompts[label]['Entry']['text'] + value
             self.__prompts[label]['Entry'].configure(text=value)
         else:
             if not append:
-                self.__inputs[label]['Entry'].delete(0, END)
+                self.__inputs[label]['Entry'].delete(0, "end")
             self.__inputs[label]['Entry'].insert(0, value)
 
     def clear(self, label: str) -> None:
         if label in self.__printWindow:
-            self.__printWindow[label]['Text'].config(state=NORMAL)
-            self.__printWindow[label]['Text'].delete(1.0, END)
-            self.__printWindow[label]['Text'].config(state=DISABLED)
+            self.__printWindow[label]['Text'].config(state="normal")
+            self.__printWindow[label]['Text'].delete(1.0, "end")
+            self.__printWindow[label]['Text'].config(state="disabled")
         elif label in self.__prompts:
             self.__prompts[label]['Entry'].configure(text="")
         else:
-            self.__inputs[label]['Entry'].delete(0, END)
+            self.__inputs[label]['Entry'].delete(0, "end")
