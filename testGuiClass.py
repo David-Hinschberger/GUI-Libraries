@@ -1,21 +1,21 @@
 from Python_GUI.GuiClass import *
 
 
-def addTwoValues(screen):
-    int1 = screen.get("int1")
-    int2 = screen.get("int2")
+def addTwoValues(screen: GuiClass):
+    int1 = screen.getInt("int1")
+    int2 = screen.getInt("int2")
     total = int1 + int2
     screen.set("window1", total)
 
 
-def floatAdd1(screen):
-    screen.set("window1", screen.get("float1") + 1)
-    screen.set("float1", screen.get("float1") + 1)
+def floatAdd1(screen: GuiClass):
+    screen.set("window1", screen.getFloat("float1") + 1)
+    screen.set("float1", screen.getFloat("float1") + 1)
 
 
-def fizzBuzz1(screen):
+def fizzBuzz1(screen: GuiClass):
     y = ''
-    for i in range(1, screen.get("int1")):
+    for i in range(1, screen.getInt("int1")):
         if i % 3 == 0:
             y += "Fizz"
         if i % 5 == 0:
@@ -26,9 +26,9 @@ def fizzBuzz1(screen):
     screen.set('window1', y)
 
 
-def fizzBuzz2(screen):
+def fizzBuzz2(screen: GuiClass):
     results = ["FizzBuzz" if i % (3 * 5) == 0 else "Fizz" if i % 3 == 0 else "Buzz" if i % 5 == 0 else str(i) for i in
-               range(1, screen.get("int2"))]
+               range(1, screen.getInt("int2"))]
     screen.set('window1', ', '.join(results))
 
 
@@ -39,19 +39,19 @@ def main():
 
     GUI = GuiClass()
 
-    GUI.addText("Testing data entry", alignLeft=False)
+    GUI.addText("label1", "Testing data entry", alignLeft=False)
     GUI.addSpacer(col=2)
 
-    GUI.addText("Enter int 1")
+    GUI.addText("label2", "Enter int 1")
     GUI.addIntInput("int1", defValue=int1)
 
-    GUI.addText("Enter int 2")
+    GUI.addText("label3", "Enter int 2")
     GUI.addIntInput("int2", defValue=int2)
 
-    GUI.addText("Enter float 1")
+    GUI.addText("label4", "Enter float 1")
     GUI.addFloatInput("float1", defValue=float1)
 
-    GUI.addText("Enter string 1")
+    GUI.addText("label5", "Enter string 1")
     GUI.addStringInput("str1")
 
     fruitChoices = ["Apple", "Pear", "Grape", "Orange", 5, 6]
@@ -61,7 +61,7 @@ def main():
     GUI.addButton("Fizzbuzz until int1 (new lines)", function=fizzBuzz1)
     GUI.addButton("Fizzbuzz until int2 (no new lines)", function=fizzBuzz2)
 
-    GUI.addText("Total")
+    GUI.addText("label6", "Total")
     GUI.addIntInput("total")
 
     GUI.addPrintWindow("window1")
@@ -71,25 +71,24 @@ def main():
     print("Before inputs")
     print("int1 is ", int1)
     print("int2 is ", int2)
-    print("Float is ", GUI.get("float1"))
-    print("String is ", GUI.get("str1"))
-    print("Total is ", GUI.get("total"))
-    print("Numeric total is ", (int1 + int2 + GUI.get("float1")))
-    print("Favorite fruit is ", GUI.get("Enter your favorite fruit"))
+    print("Float is ", GUI.getFloat("float1"))
+    print("String is ", GUI.getStr("str1"))
+    print("Total is ", GUI.getInt("total"))
+    print("Numeric total is ", (int1 + int2 + GUI.getFloat("float1")))
+    print("Favorite fruit is ", GUI.getStr("Enter your favorite fruit"))
 
     GUI.startGUI()
-    int1 = GUI.get("int1")
-    int2 = GUI.get("int2")
+    int1 = GUI.getInt("int1")
+    int2 = GUI.getInt("int2")
 
     print("\n\nAfter inputs")
     print("int1 is ", int1)
     print("int2 is ", int2)
-    print("Float is ", GUI.get("float1"))
-    print("String is ", GUI.get("str1"))
-    print("Total is ", GUI.get("total"))
-    print("Numeric total is ", (int1 + int2 + GUI.get("float1")))
-
-    print("Favorite fruit is ", GUI.get("Enter your favorite fruit"))
+    print("Float is ", GUI.getFloat("float1"))
+    print("String is ", GUI.getStr("str1"))
+    print("Total is ", GUI.getInt("total"))
+    print("Numeric total is ", (int1 + int2 + GUI.getFloat("float1")))
+    print("Favorite fruit is ", GUI.getStr("Enter your favorite fruit"))
 
 
 if __name__ == "__main__":
