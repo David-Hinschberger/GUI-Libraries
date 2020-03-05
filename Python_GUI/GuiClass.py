@@ -15,14 +15,9 @@ class GuiClass:
         self.__spacers = []
         self.__prompts = {}
         self.__numOfItems = 0
-        self.__oKButtonInfo = {}
-        self.__cancelButtonInfo = {}
         self.__root = Tk()
         # Keeps track of rows added for each column
         self.__colRowCount = [0, 0, 0]
-        # No plans to use in the future.
-        self.__useOKButton = False
-        self.__useCancelButton = False
 
     def __getSortedLabels(self) -> Iterable:
         return sorted(list(self.__inputs.keys()), key=lambda x: int(self.__inputs[x]['index']))
@@ -31,20 +26,6 @@ class GuiClass:
         sortedLabels = self.__getSortedLabels()
         for label in sortedLabels:
             self.__inputs[label]['value'] = self.__inputs[label]['Entry'].get()
-
-    # No plans to use in the future.
-    def setOKButton(self, text: str, col: int, row: int) -> None:
-        self.__useOKButton = True
-        self.__oKButtonInfo['text'] = text
-        self.__oKButtonInfo['col'] = col
-        self.__oKButtonInfo['row'] = row
-
-    # No plans to use in the future.
-    def setCancelButton(self, text: str, col: int, row: int) -> None:
-        self.__useCancelButton = True
-        self.__cancelButtonInfo['text'] = text
-        self.__cancelButtonInfo['col'] = col
-        self.__cancelButtonInfo['row'] = row
 
     # No plans to use in the future.
     def __enterButtonPressed(self) -> None:
