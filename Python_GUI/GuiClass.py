@@ -130,22 +130,6 @@ class GuiClass:
             label['Button'].bind("<Return>", self.__buttonPressed)
             label['Button'].bind("<Button-1>", self.__buttonPressed)
 
-        # No plans to use in the future.
-        # # needs to go in here somewhere
-        # if self.__useOKButton:
-        #     okButton = Button(self.__root, takefocus=1, text=self.__oKButtonInfo['text'])
-        #     okButton.grid(padx='3m', pady='3m', ipadx='2m', ipady='1m', sticky="nesw",
-        #                   row=self.__oKButtonInfo['row'], column=self.__oKButtonInfo['col'])
-        #     okButton.bind("<Return>", self.enterButtonPressed)
-        #     okButton.bind("<Button-1>", self.enterButtonPressed)
-        #
-        # if self.__useCancelButton:
-        #     cancelButton = Button(self.__root, takefocus=1, text=self.__cancelButtonInfo['text'])
-        #     cancelButton.grid(padx='3m', pady='3m', ipadx='2m', ipady='1m', sticky="nesw",
-        #                       row=self.__cancelButtonInfo['row'], column=self.__cancelButtonInfo['col'])
-        #     cancelButton.bind("<Return>", self.cancelButtonPressed)
-        #     cancelButton.bind("<Button-1>", self.cancelButtonPressed)
-
         # Do we want to refresh the input if the window is closed out?
         self.__root.protocol("WM_DELETE_WINDOW", lambda: (self.__refreshInput(), self.__root.destroy()))
         self.__root.mainloop()
