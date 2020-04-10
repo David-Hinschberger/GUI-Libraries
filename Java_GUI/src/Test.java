@@ -1,11 +1,10 @@
-import static GUI.FIELD.*;
 import GUI.*;
 
 public class Test {
 
-    private static String fizzbuzz(String... args) {
+    private static String fizzbuzz(GUI screen) {
         StringBuilder result = new StringBuilder();
-        int limit = Integer.parseInt(args[0]);
+        int limit = Integer.parseInt(screen.getStr("Enter a number"));
         for (int i = 1; i <= limit; i++) {
             StringBuilder sb = new StringBuilder();
             if (i % 3 == 0) {
@@ -24,28 +23,29 @@ public class Test {
     }
 
 
-    static void squareNum(String... args) {
-        String value = args[0];
+    static void squareNum(GUI screen) {
+        String value = screen.getStr("Enter a number");
         int temp = Integer.parseInt(value);
         System.out.println(temp * temp);
     }
 
 
     public static void main(String[] args) {
-        GUI.setTitle("Windows 11");
-        GUI.setIcon("https://puu.sh/F5xQD.png");
+        GUI gui = new GUI();
+        gui.addTitle("Windows 11");
+        gui.addIcon("https://puu.sh/F5xQD.png");
 
-        GUI.addTextField("Enter a number", "Enter a number");
-        GUI.addPrintButton("squareBtn", "Square this number", Test::squareNum, "Enter a number");
+        gui.addStringInput("Enter a number", "Enter a number");
+        gui.addButton("squareBtn", Test::squareNum);
 
-        GUI.addField(DECIMALFIELD, "identifier", "Decimal here");
+        gui.addFloatInput("identifier");
 
-        GUI.addTextField("fizzbuzz", "Fizz Buzz until: ");
-        GUI.addGUIButton("fizzbuzzBtn", "FizzBuzz!", Test::fizzbuzz, "fizzbuzz");
+        gui.addStringInput("fizzbuzz");
+        gui.addButton("fizzbuzzBtn", Test::fizzbuzz);
 
-        GUI.setDebug(true);
+        gui.setDebug(true);
 
-        new GUI().start();
+        gui.startGUI();
     }
 
 }

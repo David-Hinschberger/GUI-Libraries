@@ -262,7 +262,7 @@ public class GUI extends Application {
             scene.widthProperty().addListener(
                 (observableValue, oldSceneWidth, newSceneWidth) -> System.out
                     .println("Width: " + newSceneWidth));
-            scene.widthProperty().addListener(
+            scene.heightProperty().addListener(
                 (observableValue, oldSceneHeight, newSceneHeight) -> System.out
                     .println("Height: " + newSceneHeight));
         }
@@ -296,7 +296,24 @@ public class GUI extends Application {
         }
     }
 
-    public static void setDebug(boolean debug) {
+    public int getInt(String label){
+        if(printWindows.containsKey(label)){
+            return Integer.parseInt(printWindows.get(label).getEntry().getText());
+        } else if (inputs.containsKey("__" + label + "__")) {
+            return Integer.parseInt((String) inputs.get("__" + label + "__").getValue());
+        } else if (inputs.containsKey(label)) {
+            return Integer.parseInt((String) inputs.get(label).getValue());
+        } else if (prompts.containsKey(label)){
+            return Integer.parseInt(prompts.get(label).getEntry().getText());
+        } else {
+            // throw label not found error?
+            return Integer.MIN_VALUE;
+        }
+    }
+
+    
+
+    public void setDebug(boolean debug) {
         GUI.debug = debug;
     }
 

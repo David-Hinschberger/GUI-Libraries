@@ -1,4 +1,4 @@
-from Python_GUI.GuiClass import *
+from Python_GUI.GUI.GUI import *
 
 
 def addTwoValues(screen: GuiClass):
