@@ -23,6 +23,9 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 
 public class GUI extends Application {
+    static final int PROMPTCOLUMN = 0;
+    static final int INPUTCOLUMN  = 1;
+    static final int BUTTONCOLUMN = 2;
 
     private static boolean debug = false;
 
@@ -104,8 +107,7 @@ public class GUI extends Application {
     }
 
 
-
-    private void setup(Stage stage) {
+    private void startInput(Stage stage) {
         if(title != null){
             stage.setTitle(title);
         }
@@ -117,6 +119,14 @@ public class GUI extends Application {
         grid.setVgap(5);
         grid.setHgap(5);
 
+        for(String p: prompts.keySet()){
+            Label label = new Label(prompts.get(p).getPrompt());
+            GridPane.setConstraints(label, prompts.get(p).getCol(), prompts.get(p).getRow());
+            grid.getChildren().add(label);
+            prompts.get(p).setEntry(label);
+        }
+
+        
 
 
         final TextArea output = new TextArea();
@@ -274,7 +284,7 @@ public class GUI extends Application {
                     .println("Height: " + newSceneHeight));
         }
 
-        setup(stage);
+        startInput(stage);
 
 
         //resizable

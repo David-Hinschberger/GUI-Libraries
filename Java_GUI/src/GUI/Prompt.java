@@ -37,4 +37,8 @@ class Prompt {
     void setEntry(Control entry) {
         Entry = entry;
     }
+
+    public Control getEntry() {
+        return Entry;
+    }
 }
