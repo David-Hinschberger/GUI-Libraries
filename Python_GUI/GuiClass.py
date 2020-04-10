@@ -96,8 +96,7 @@ class GuiClass:
             s = self.__spacers[index]
             Label(self.__root).grid(row=s['row'], column=s['col'], padx=5, pady=5, ipady='1m')
 
-        sortedLabels = self.__getSortedLabels()
-        for sortedLabel in sortedLabels:
+        for sortedLabel in  self.__getSortedLabels():
             label = self.__inputs[sortedLabel]
             if label['type'] == 'combo':
                 label['Entry'] = Combobox(self.__root, values=label['initValue'], state="readonly")

@@ -8,10 +8,12 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -126,6 +128,47 @@ public class GUI extends Application {
             prompts.get(p).setEntry(label);
         }
 
+        // no need for spacers in Javafx?
+
+
+
+        for(String sortedLabel: getSortedLabels()){
+            Input label = inputs.get(sortedLabel);
+            if(label.getType() == FIELD.COMBO){
+                ComboBox<Object> comboBox = new ComboBox<>(FXCollections
+                    .observableList((List<Object>) label.getInitValue()));
+                label.setEntry(comboBox);
+                GridPane.setConstraints(comboBox, label.getCol(), label.getRow());
+            } else {
+                TextField field = new TextField();
+                field.setPromptText(label.getValue().toString());
+                field.setPrefColumnCount(23);
+                switch (label.getType()) {
+                    case FLOAT:
+                        field.textProperty().addListener(
+                            (observable, oldValue, newValue) ->
+                            {
+                                if (!newValue.matches("\\d*(\\.\\d*)?")) {
+                                    field.setText(oldValue);
+                                }
+                            });
+                        break;
+                    case INT:
+                        field.textProperty().addListener(
+                            (observable, oldValue, newValue) ->
+                            {
+                                if (!newValue.matches("\\d{0,10}")) {
+                                    field.setText(oldValue);
+                                }
+                            });
+                        break;
+                }
+                GridPane.setConstraints(field, label.getCol(), label.getRow());
+                grid.getChildren().add(field);
+                }
+            }
+        }
+
         
 
 
@@ -138,38 +181,6 @@ public class GUI extends Application {
         vbox.getChildren().add(grid);
         vbox.getChildren().add(output);
 
-        final Label test = new Label("Enter a number:");
-        GridPane.setConstraints(test, 0, leftRow++);
-        grid.getChildren().add(test);
-
-        for (Pair<String, String> data : fieldsList) {
-            TextField field = new TextField();
-            field.setPromptText(data.getValue());
-            field.setPrefColumnCount(20);
-            switch (IDMap.get(data.getKey())) {
-                case DECIMALFIELD:
-                    field.textProperty().addListener(
-                        (observable, oldValue, newValue) ->
-                        {
-                            if (!newValue.matches("\\d*(\\.\\d*)?")) {
-                                field.setText(oldValue);
-                            }
-                        });
-                    break;
-                case INTFIELD:
-                    field.textProperty().addListener(
-                        (observable, oldValue, newValue) ->
-                        {
-                            if (!newValue.matches("\\d{0,10}")) {
-                                field.setText(oldValue);
-                            }
-                        });
-                    break;
-            }
-            GridPane.setConstraints(field, 0, leftRow++);
-            grid.getChildren().add(field);
-            textFieldHashMap.put(data.getKey(), field);
-        }
 
         for (Pair<String, Object[]> data : buttonsList) {
             Button button = new Button((String) data.getValue()[0]);
