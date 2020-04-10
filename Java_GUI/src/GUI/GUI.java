@@ -311,6 +311,21 @@ public class GUI extends Application {
         }
     }
 
+    public double getFloat(String label){
+        if(printWindows.containsKey(label)){
+            return Double.parseDouble(printWindows.get(label).getEntry().getText());
+        } else if (inputs.containsKey("__" + label + "__")) {
+            return Double.parseDouble((String) inputs.get("__" + label + "__").getValue());
+        } else if (inputs.containsKey(label)) {
+            return Double.parseDouble((String) inputs.get(label).getValue());
+        } else if (prompts.containsKey(label)){
+            return Double.parseDouble(prompts.get(label).getEntry().getText());
+        } else {
+            // throw label not found error?
+            return Double.NaN;
+        }
+    }
+
     
 
     public void setDebug(boolean debug) {
