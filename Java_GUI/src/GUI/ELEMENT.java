@@ -1,5 +1,5 @@
 package GUI;
 
-public enum ELEMENTS {
+public enum ELEMENT {
     STRINGFIELD, INTFIELD, DECIMALFIELD, BUTTON, LABEL, COMBOBOX;
 }

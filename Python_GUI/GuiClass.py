@@ -46,6 +46,7 @@ class GuiClass:
 
     @staticmethod
     def __validateFloat(value_if_allowed: str) -> bool:
+        # lambda in java
         if len(value_if_allowed) == 0:
             return True
         if value_if_allowed:
@@ -59,6 +60,7 @@ class GuiClass:
 
     @staticmethod
     def __validateInt(value_if_allowed: str) -> bool:
+        # lambda in java
         if len(value_if_allowed) == 0:
             return True
         if value_if_allowed:
@@ -72,6 +74,7 @@ class GuiClass:
 
     # window default seems to be 670x640 px
     def __startInput(self) -> None:
+        # called setup in java
         if self.__title is not None:
             self.__root.title(self.__title)
         if self.__imagePath is not None:

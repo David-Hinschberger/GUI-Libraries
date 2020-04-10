@@ -1,4 +1,4 @@
-import static GUI.FIELDS.*;
+import static GUI.FIELD.*;
 import GUI.*;
 
 public class Test {
@@ -23,23 +23,11 @@ public class Test {
         return result.toString();
     }
 
-    private static void printThings(String... args) {
-        for (String s : args) {
-            if (!s.equals("")) {
-                System.out.println(s);
-            }
-        }
-    }
 
     static void squareNum(String... args) {
         String value = args[0];
         int temp = Integer.parseInt(value);
         System.out.println(temp * temp);
-    }
-
-    static String function() {
-        int foo = 42;
-        return "Answer is: " + Integer.toString(foo);
     }
 
 
@@ -52,18 +40,8 @@ public class Test {
 
         GUI.addField(DECIMALFIELD, "identifier", "Decimal here");
 
-//        GUI.addTextField("1", "Enter gibberish here");
-//        GUI.addTextField("2", "Enter gibberish here");
-//        GUI.addTextField("3", "Enter gibberish here");
-//        GUI.addTextField("4", "Enter gibberish here");
-//        GUI.addTextField("5", "Enter gibberish here");
-//        GUI.addPrintButton("printBtn", "Print things!", Test::printThings, "1", "2",
-//           . "4", "5");
-
         GUI.addTextField("fizzbuzz", "Fizz Buzz until: ");
         GUI.addGUIButton("fizzbuzzBtn", "FizzBuzz!", Test::fizzbuzz, "fizzbuzz");
-
-//        GUI.addGUIButton("fizzbuzzBtn", "FizzBuzz!", Test::addTwoNumbers, "int1", "int2");
 
         GUI.setDebug(true);
 

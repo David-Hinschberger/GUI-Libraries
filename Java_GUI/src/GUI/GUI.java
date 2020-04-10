@@ -1,6 +1,8 @@
 package GUI;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
@@ -31,15 +33,18 @@ public class GUI extends Application {
     private GridPane grid = new GridPane();
     private VBox vbox = new VBox();
     //Scene of application
-    private Scene scene = new Scene(vbox, 640, 480);
+    private Scene scene = new Scene(vbox, 670, 640);
     private static int leftRow = 0;
     private static int rightRow = 0;
 
-    //Hashmap of IDs mapped to the corresponding element
-    private static HashMap<String, ELEMENTS> IDMap = new HashMap<>();
+    private HashMap<String, Input> inputs = new HashMap<>();
+    private HashMap<String, Prompt> prompts= new HashMap<>();
 
-//    //list of pairs with id as key and value being the textfield's prompt
-//    private static List<Pair<String, String>> textFieldsList = new ArrayList<>();
+    //ignore below
+
+
+    //Hashmap of IDs mapped to the corresponding element
+    private static HashMap<String, ELEMENT> IDMap = new HashMap<>();
 
     //List of pairs with id as key and value being the field's prompt
     private static List<Pair<String, String>> fieldsList = new ArrayList<>();
@@ -57,83 +62,62 @@ public class GUI extends Application {
     //List of Consumers
     private static List<Consumer<String[]>> consumersList = new ArrayList<>();
 
-    public static void setTitle(String title) {
-        GUI.title = title;
+    /**
+     * Returns a list of labels added in bottom-down order in code (chronological).
+     * @return keys in the HashMap inputs sorted according to the index value of the Inputs
+     */
+    private List<String> getSortedLabels(){
+        List<String> labels= new ArrayList<>(inputs.keySet());
+        Collections.sort(labels, Comparator.comparingInt(x -> inputs.get(x).getIndex()));
+        return labels;
     }
 
-    private static void checkDuplicateID(String id) {
-        if (IDMap.containsKey(id)) {
-            throw new DuplicateIDException(IDMap.get(id).toString());
+    /**
+     * Refreshes the input for all the variables stored from the data on the GUI
+     */
+    private void refreshInput(){
+        List<String> sortedLabels = getSortedLabels();
+        for(String label: sortedLabels){
+            inputs.get(label).setValue(inputs.get(label).getEntry());
         }
     }
 
-    private static void checkUnreferencedID(String id) {
-        if (!IDMap.containsKey(id)) {
-            throw new UnreferencedIDException(id);
+    /**
+     * Handles button press
+     * @param userFunction is the function the user writes to be called back upon.
+     */
+    private void buttonPressed(Consumer<GUI> userFunction){
+        refreshInput();
+        userFunction.accept(this);
+    }
+
+    /**
+     * Adds a field input
+     * @param label
+     * @param col
+     * @param row
+     * @param defValue
+     * @param typeOfInput
+     */
+    private void inputHelper(String label, int col, int row, Object defValue, FIELD typeOfInput){
+        inputs.put(label, new Input(col, row, defValue, typeOfInput));
+    }
+
+
+
+    private void setup(Stage stage) {
+        if(title != null){
+            stage.setTitle(title);
         }
-    }
-
-    private static void checkUnreferencedIDs(String... ids) {
-        for (String id : ids) {
-            checkUnreferencedID(id);
+        if (iconURL != null) {
+            stage.getIcons().add(new Image(iconURL));
         }
-    }
 
-    public static boolean addField(FIELDS field, String id, String prompt)
-        throws DuplicateIDException {
-        checkDuplicateID(id);
-        ELEMENTS elem = field == FIELDS.STRINGFIELD ? ELEMENTS.STRINGFIELD :
-            field == FIELDS.DECIMALFIELD ? ELEMENTS.DECIMALFIELD :
-                field == FIELDS.INTFIELD ? ELEMENTS.INTFIELD :
-                    null;
-        IDMap.put(id, elem);
-        return fieldsList.add(new Pair<>(id, prompt));
-    }
-
-    static boolean addIntField(String id, String prompt) throws DuplicateIDException {
-        checkDuplicateID(id);
-        IDMap.put(id, ELEMENTS.INTFIELD);
-        return fieldsList.add(new Pair<>(id, prompt));
-    }
-
-    public static boolean addTextField(String id, String prompt) throws DuplicateIDException {
-        checkDuplicateID(id);
-        IDMap.put(id, ELEMENTS.STRINGFIELD);
-        return fieldsList.add(new Pair<>(id, prompt));
-    }
-
-    public static boolean addPrintButton(String id, String prompt, Consumer<String[]> function,
-        String... ids) {
-        checkDuplicateID(id);
-        checkUnreferencedIDs(ids);
-        IDMap.put(id, ELEMENTS.BUTTON);
-        consumersList.add(function);
-        return buttonsList
-            .add(new Pair<>(id, new Object[]{prompt, ids, consumersList.size() - 1, false}));
-    }
-
-    public static boolean addGUIButton(String id, String prompt, Function<String[], String> function,
-        String... ids) {
-        checkDuplicateID(id);
-        checkUnreferencedIDs(ids);
-        IDMap.put(id, ELEMENTS.BUTTON);
-        functionsList.add(function);
-        return buttonsList
-            .add(new Pair<>(id, new Object[]{prompt, ids, functionsList.size() - 1, true}));
-    }
-
-    public static void setIcon(String icon) {
-        GUI.iconURL = icon;
-    }
-
-    public static void setDebug(boolean debug) {
-        GUI.debug = debug;
-    }
-
-    private void setup() {
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setVgap(5);
         grid.setHgap(5);
+
+
 
         final TextArea output = new TextArea();
         output.setWrapText(false);
@@ -177,10 +161,6 @@ public class GUI extends Application {
             textFieldHashMap.put(data.getKey(), field);
         }
 
-        final Label outputLabel = new Label("Output:");
-        GridPane.setConstraints(outputLabel, 0, leftRow++);
-        grid.getChildren().add(outputLabel);
-
         for (Pair<String, Object[]> data : buttonsList) {
             Button button = new Button((String) data.getValue()[0]);
             GridPane.setConstraints(button, 1, rightRow++);
@@ -201,8 +181,84 @@ public class GUI extends Application {
             });
             buttonHashMap.put(data.getKey(), button);
         }
-
     }
+
+
+
+
+    public static void setTitle(String title) {
+        GUI.title = title;
+    }
+
+    private static void checkDuplicateID(String id) {
+        if (IDMap.containsKey(id)) {
+            throw new DuplicateIDException(IDMap.get(id).toString());
+        }
+    }
+
+    private static void checkUnreferencedID(String id) {
+        if (!IDMap.containsKey(id)) {
+            throw new UnreferencedIDException(id);
+        }
+    }
+
+    private static void checkUnreferencedIDs(String... ids) {
+        for (String id : ids) {
+            checkUnreferencedID(id);
+        }
+    }
+
+    public static boolean addField(FIELD field, String id, String prompt)
+        throws DuplicateIDException {
+        checkDuplicateID(id);
+        ELEMENT elem = field == FIELD.STRINGFIELD ? ELEMENT.STRINGFIELD :
+            field == FIELD.DECIMALFIELD ? ELEMENT.DECIMALFIELD :
+                field == FIELD.INTFIELD ? ELEMENT.INTFIELD :
+                    null;
+        IDMap.put(id, elem);
+        return fieldsList.add(new Pair<>(id, prompt));
+    }
+
+    static boolean addIntField(String id, String prompt) throws DuplicateIDException {
+        checkDuplicateID(id);
+        IDMap.put(id, ELEMENT.INTFIELD);
+        return fieldsList.add(new Pair<>(id, prompt));
+    }
+
+    public static boolean addTextField(String id, String prompt) throws DuplicateIDException {
+        checkDuplicateID(id);
+        IDMap.put(id, ELEMENT.STRINGFIELD);
+        return fieldsList.add(new Pair<>(id, prompt));
+    }
+
+    public static boolean addPrintButton(String id, String prompt, Consumer<String[]> function,
+        String... ids) {
+        checkDuplicateID(id);
+        checkUnreferencedIDs(ids);
+        IDMap.put(id, ELEMENT.BUTTON);
+        consumersList.add(function);
+        return buttonsList
+            .add(new Pair<>(id, new Object[]{prompt, ids, consumersList.size() - 1, false}));
+    }
+
+    public static boolean addGUIButton(String id, String prompt, Function<String[], String> function,
+        String... ids) {
+        checkDuplicateID(id);
+        checkUnreferencedIDs(ids);
+        IDMap.put(id, ELEMENT.BUTTON);
+        functionsList.add(function);
+        return buttonsList
+            .add(new Pair<>(id, new Object[]{prompt, ids, functionsList.size() - 1, true}));
+    }
+
+    public static void setIcon(String icon) {
+        GUI.iconURL = icon;
+    }
+
+    public static void setDebug(boolean debug) {
+        GUI.debug = debug;
+    }
+
 
     @Override
     public void start(Stage stage) {
@@ -218,11 +274,8 @@ public class GUI extends Application {
                     .println("Height: " + newSceneHeight));
         }
 
-        setup();
-        stage.setTitle(title);
-        if (iconURL != null) {
-            stage.getIcons().add(new Image(iconURL));
-        }
+        setup(stage);
+
 
         //resizable
         stage.setResizable(true);
