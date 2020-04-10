@@ -9,7 +9,6 @@ class GuiClass:
         self.__imagePath = None
         self.__inputs = {}
         self.__functions = {}
-        self.__functionNameToLabel = {}
         self.__printWindow = {}
         self.__spacers = []
         self.__prompts = {}
@@ -145,8 +144,6 @@ class GuiClass:
         self.__printWindow[label] = {'startCol': 1, 'endCol': 4}
 
     def addButton(self, label: str, function: callable) -> None:
-        label = label
-        self.__functionNameToLabel[label[0].lower() + label[1:]] = label
         self.__functions[label] = {'function': function, 'col': 3, 'row': self.__colRowCount[2]}
         self.__colRowCount[2] += 1
 

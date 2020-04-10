@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -25,8 +24,9 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 
 public class GUI extends Application {
+
     static final int PROMPTCOLUMN = 0;
-    static final int INPUTCOLUMN  = 1;
+    static final int INPUTCOLUMN = 1;
     static final int BUTTONCOLUMN = 2;
 
     private static boolean debug = false;
@@ -43,9 +43,10 @@ public class GUI extends Application {
     private static int rightRow = 0;
 
     private HashMap<String, Input> inputs = new HashMap<>();
-    private HashMap<String, Prompt> prompts= new HashMap<>();
+    private HashMap<String, Prompt> prompts = new HashMap<>();
     private HashMap<String, PrintWindow> printWindows = new HashMap<>();
-
+    private HashMap<String, Function> functions = new HashMap<>();
+    private int[] colRowCount = new int[3];
     //ignore below
 
 
@@ -61,16 +62,17 @@ public class GUI extends Application {
     //Hashmap of IDs mapped to the corresponding TextField
     private static HashMap<String, TextField> textFieldHashMap = new HashMap<>();
     //List of functions
-    private static List<Function<String[], String>> functionsList = new ArrayList<>();
+    private static List<java.util.function.Function> functionsList = new ArrayList<>();
     //List of Consumers
     private static List<Consumer<String[]>> consumersList = new ArrayList<>();
 
     /**
      * Returns a list of labels added in bottom-down order in code (chronological).
+     *
      * @return keys in the HashMap inputs sorted according to the index value of the Inputs
      */
-    private List<String> getSortedLabels(){
-        List<String> labels= new ArrayList<>(inputs.keySet());
+    private List<String> getSortedLabels() {
+        List<String> labels = new ArrayList<>(inputs.keySet());
         Collections.sort(labels, Comparator.comparingInt(x -> inputs.get(x).getIndex()));
         return labels;
     }
@@ -78,37 +80,33 @@ public class GUI extends Application {
     /**
      * Refreshes the input for all the variables stored from the data on the GUI
      */
-    private void refreshInput(){
+    private void refreshInput() {
         List<String> sortedLabels = getSortedLabels();
-        for(String label: sortedLabels){
+        for (String label : sortedLabels) {
             inputs.get(label).setValue(inputs.get(label).getEntry());
         }
     }
 
     /**
      * Handles button press
+     *
      * @param userFunction is the function the user writes to be called back upon.
      */
-    private void buttonPressed(Consumer<GUI> userFunction){
+    private void buttonPressed(Consumer<GUI> userFunction) {
         refreshInput();
         userFunction.accept(this);
     }
 
     /**
      * Adds a field input
-     * @param label
-     * @param col
-     * @param row
-     * @param defValue
-     * @param typeOfInput
      */
-    private void inputHelper(String label, int col, int row, Object defValue, FIELD typeOfInput){
+    private void inputHelper(String label, int col, int row, Object defValue, FIELD typeOfInput) {
         inputs.put(label, new Input(col, row, defValue, typeOfInput));
     }
 
 
     private void startInput(Stage stage) {
-        if(title != null){
+        if (title != null) {
             stage.setTitle(title);
         }
         if (iconURL != null) {
@@ -119,7 +117,7 @@ public class GUI extends Application {
         grid.setVgap(5);
         grid.setHgap(5);
 
-        for(String label: printWindows.keySet()){
+        for (String label : printWindows.keySet()) {
             TextArea printWindow = new TextArea();
             printWindow.setWrapText(false);
             printWindow.setEditable(false);
@@ -127,9 +125,10 @@ public class GUI extends Application {
             vbox.setAlignment(Pos.TOP_CENTER);
             vbox.getChildren().add(grid);
             vbox.getChildren().add(printWindow);
+            printWindows.get(label).setEntry(printWindow);
         }
 
-        for(String p: prompts.keySet()){
+        for (String p : prompts.keySet()) {
             Label label = new Label(prompts.get(p).getPrompt());
             GridPane.setConstraints(label, prompts.get(p).getCol(), prompts.get(p).getRow());
             grid.getChildren().add(label);
@@ -138,15 +137,14 @@ public class GUI extends Application {
 
         // no need for spacers in Javafx?
 
-
-
-        for(String sortedLabel: getSortedLabels()){
+        for (String sortedLabel : getSortedLabels()) {
             Input label = inputs.get(sortedLabel);
-            if(label.getType() == FIELD.COMBO){
+            if (label.getType() == FIELD.COMBO) {
                 ComboBox<Object> comboBox = new ComboBox<>(FXCollections
                     .observableList((List<Object>) label.getInitValue()));
                 label.setEntry(comboBox);
                 GridPane.setConstraints(comboBox, label.getCol(), label.getRow());
+                inputs.get(label).setEntry(comboBox);
             } else {
                 TextField field = new TextField();
                 field.setPromptText(label.getValue().toString());
@@ -173,110 +171,87 @@ public class GUI extends Application {
                 }
                 GridPane.setConstraints(field, label.getCol(), label.getRow());
                 grid.getChildren().add(field);
+                inputs.get(label).setEntry(field);
             }
         }
 
-        
-
-
-        for (Pair<String, Object[]> data : buttonsList) {
-            Button button = new Button((String) data.getValue()[0]);
-            GridPane.setConstraints(button, 1, rightRow++);
+        for (String funcLabel : functions.keySet()) {
+            Function function = functions.get(funcLabel);
+            Button button = new Button(funcLabel);
+            GridPane.setConstraints(button, function.getCol(), function.getRow());
             grid.getChildren().add(button);
-            button.setOnAction(e -> {
-                List<String> arguments = new ArrayList<>();
-                for (String id : (String[]) data.getValue()[1]) {
-                    arguments.add(textFieldHashMap.get(id).getText());
-                }
-
-                if ((boolean) data.getValue()[3]) {
-                    output.setText(functionsList.get((int) data.getValue()[2])
-                        .apply(arguments.toArray(new String[0])));
-                } else {
-                    consumersList.get((int) data.getValue()[2])
-                        .accept(arguments.toArray(new String[0]));
-                }
-            });
-            buttonHashMap.put(data.getKey(), button);
+            button.setOnAction(e -> function.getFunction().accept(this));
+            function.setEntry(button);
         }
+
+        stage.setOnCloseRequest(e -> refreshInput());
     }
 
+    public void addPrintWindow(String label) {
+        PrintWindow printWindow = new PrintWindow(printWindows.size());
+    }
 
+    public void addButton(String label, Consumer<GUI> function) {
+        Function f = new Function(function, colRowCount[BUTTONCOLUMN]++, BUTTONCOLUMN);
+        functions.put(label, f);
 
+    }
 
-    public static void setTitle(String title) {
+    public void addText(String identifier, String prompt) {
+        addText(identifier, prompt, true);
+    }
+
+    public void addText(String identifier, String prompt, boolean alignLeft) {
+        Prompt p = new Prompt(prompt, alignLeft, colRowCount[PROMPTCOLUMN]++, PROMPTCOLUMN);
+    }
+
+    public void addSpacer(int col) {
+        colRowCount[col]++;
+    }
+
+    public void addIntInput(String label) {
+        addIntInput(label, 0);
+    }
+
+    public void addIntInput(String label, int defValue) {
+        inputHelper(label, INPUTCOLUMN, colRowCount[INPUTCOLUMN]++, defValue, FIELD.INT);
+    }
+
+    public void addStringInput(String label) {
+        addStringInput(label, "");
+    }
+
+    public void addStringInput(String label, String defValue) {
+        inputHelper(label, INPUTCOLUMN, colRowCount[INPUTCOLUMN]++, defValue, FIELD.STRING);
+    }
+
+    public void addFloatInput(String label) {
+        addFloatInput(label, 0f);
+    }
+
+    public void addFloatInput(String label, double defValue) {
+        inputHelper(label, INPUTCOLUMN, colRowCount[INPUTCOLUMN]++, defValue, FIELD.FLOAT);
+    }
+
+    public void addComboInput(String prompt, List<Object> choices) {
+        int row = Math.max(colRowCount[PROMPTCOLUMN], colRowCount[INPUTCOLUMN]);
+        Prompt p = new Prompt(prompt, true, row, PROMPTCOLUMN);
+        inputHelper("__" + prompt + "__", INPUTCOLUMN, row, choices, FIELD.COMBO);
+        colRowCount[PROMPTCOLUMN] = row + 1;
+        colRowCount[INPUTCOLUMN] = row + 1;
+    }
+
+    public void addTitle(String title) {
         GUI.title = title;
     }
 
-    private static void checkDuplicateID(String id) {
-        if (IDMap.containsKey(id)) {
-            throw new DuplicateIDException(IDMap.get(id).toString());
-        }
-    }
-
-    private static void checkUnreferencedID(String id) {
-        if (!IDMap.containsKey(id)) {
-            throw new UnreferencedIDException(id);
-        }
-    }
-
-    private static void checkUnreferencedIDs(String... ids) {
-        for (String id : ids) {
-            checkUnreferencedID(id);
-        }
-    }
-
-    public static boolean addField(FIELD field, String id, String prompt)
-        throws DuplicateIDException {
-        checkDuplicateID(id);
-        ELEMENT elem = field == FIELD.STRINGFIELD ? ELEMENT.STRINGFIELD :
-            field == FIELD.DECIMALFIELD ? ELEMENT.DECIMALFIELD :
-                field == FIELD.INTFIELD ? ELEMENT.INTFIELD :
-                    null;
-        IDMap.put(id, elem);
-        return fieldsList.add(new Pair<>(id, prompt));
-    }
-
-    static boolean addIntField(String id, String prompt) throws DuplicateIDException {
-        checkDuplicateID(id);
-        IDMap.put(id, ELEMENT.INTFIELD);
-        return fieldsList.add(new Pair<>(id, prompt));
-    }
-
-    public static boolean addTextField(String id, String prompt) throws DuplicateIDException {
-        checkDuplicateID(id);
-        IDMap.put(id, ELEMENT.STRINGFIELD);
-        return fieldsList.add(new Pair<>(id, prompt));
-    }
-
-    public static boolean addPrintButton(String id, String prompt, Consumer<String[]> function,
-        String... ids) {
-        checkDuplicateID(id);
-        checkUnreferencedIDs(ids);
-        IDMap.put(id, ELEMENT.BUTTON);
-        consumersList.add(function);
-        return buttonsList
-            .add(new Pair<>(id, new Object[]{prompt, ids, consumersList.size() - 1, false}));
-    }
-
-    public static boolean addGUIButton(String id, String prompt, Function<String[], String> function,
-        String... ids) {
-        checkDuplicateID(id);
-        checkUnreferencedIDs(ids);
-        IDMap.put(id, ELEMENT.BUTTON);
-        functionsList.add(function);
-        return buttonsList
-            .add(new Pair<>(id, new Object[]{prompt, ids, functionsList.size() - 1, true}));
+    public void addIcon(String icon) {
+        GUI.iconURL = icon;
     }
 
     public static void setIcon(String icon) {
         GUI.iconURL = icon;
     }
-
-    public static void setDebug(boolean debug) {
-        GUI.debug = debug;
-    }
-
 
     @Override
     public void start(Stage stage) {
@@ -294,7 +269,6 @@ public class GUI extends Application {
 
         startInput(stage);
 
-
         //resizable
         stage.setResizable(true);
         //adds scene to stage
@@ -303,8 +277,28 @@ public class GUI extends Application {
         stage.show();
     }
 
-    public void start() {
+    public void startGUI() {
         launch();
     }
+
+    public String getStr(String label) {
+        if (printWindows.containsKey(label)) {
+            return printWindows.get(label).getEntry().getText();
+        } else if (inputs.containsKey("__" + label + "__")) {
+            return (String) inputs.get("__" + label + "__").getValue();
+        } else if (inputs.containsKey(label)) {
+            return (String) inputs.get(label).getValue();
+        } else if (prompts.containsKey(label)){
+            return prompts.get(label).getEntry().getText();
+        } else {
+            // throw label not found error?
+            return null;
+        }
+    }
+
+    public static void setDebug(boolean debug) {
+        GUI.debug = debug;
+    }
+
 
 }

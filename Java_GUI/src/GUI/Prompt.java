@@ -1,6 +1,6 @@
 package GUI;
 
-import javafx.scene.control.Control;
+import javafx.scene.control.Label;
 
 class Prompt {
 
@@ -8,7 +8,7 @@ class Prompt {
     private boolean alignLeft;
     private int row;
     private int col;
-    private Control Entry;
+    private Label Entry;
 
     Prompt(String prompt, boolean alignLeft, int row, int col){
         this.prompt = prompt;
@@ -16,7 +16,6 @@ class Prompt {
         this.row = row;
         this.col = col;
     }
-
 
     String getPrompt() {
         return prompt;
@@ -34,11 +33,11 @@ class Prompt {
         return row;
     }
 
-    void setEntry(Control entry) {
+    void setEntry(Label entry) {
         Entry = entry;
     }
 
-    public Control getEntry() {
+    public Label getEntry() {
         return Entry;
     }
 }
