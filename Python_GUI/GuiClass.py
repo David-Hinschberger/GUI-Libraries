@@ -85,6 +85,20 @@ class GuiClass:
         Grid.columnconfigure(self.__root, 1, weight=1)
         Grid.columnconfigure(self.__root, 2, weight=1)
 
+        for label in list(self.__printWindow.keys()):
+            frame = Frame(self.__root)
+            pw = self.__printWindow[label]
+            pw['Text'] = Text(frame, wrap="word")
+            pw['Scroll'] = Scrollbar(frame, command=pw['Text'].yview, orient="vertical")
+            pw['Text'].config(state="disabled", yscrollcommand=pw['Scroll'].set)
+            pw['Scroll'].pack(side="right", fill="y")
+            pw['Text'].pack(side="left", fill="both", expand="yes")
+            frame.grid(sticky="NSEW", row=max(self.__colRowCount), column=pw['startCol'], padx=5, pady=5,
+                       columnspan=(pw['endCol'] - pw['startCol'] + 1))
+            Grid.rowconfigure(self.__root, max(self.__colRowCount), weight=1)
+            for i in range(len(self.__colRowCount)):
+                self.__colRowCount[i] += 1
+
         for p in self.__prompts.keys():
             self.__prompts[p]['Entry'] = Label(self.__root, text=self.__prompts[p]['prompt'])
             self.__prompts[p]['Entry'].grid(sticky="W" if self.__prompts[p]['alignLeft'] else 'E',
@@ -109,20 +123,6 @@ class GuiClass:
                 label['Entry'] = Entry(self.__root, validate='key', validatecommand=vcmd, width=23)
                 label['Entry'].grid(sticky='EW', row=label['row'], column=label['col'], padx=5, pady=5)
                 label['Entry'].insert(0, label['value'])
-
-        for label in list(self.__printWindow.keys()):
-            frame = Frame(self.__root)
-            pw = self.__printWindow[label]
-            pw['Text'] = Text(frame, wrap="word")
-            pw['Scroll'] = Scrollbar(frame, command=pw['Text'].yview, orient="vertical")
-            pw['Text'].config(state="disabled", yscrollcommand=pw['Scroll'].set)
-            pw['Scroll'].pack(side="right", fill="y")
-            pw['Text'].pack(side="left", fill="both", expand="yes")
-            frame.grid(sticky="NSEW", row=max(self.__colRowCount), column=pw['startCol'], padx=5, pady=5,
-                       columnspan=(pw['endCol'] - pw['startCol'] + 1))
-            Grid.rowconfigure(self.__root, max(self.__colRowCount), weight=1)
-            for i in range(len(self.__colRowCount)):
-                self.__colRowCount[i] += 1
 
         for funcLabel in self.__functions:
             label = self.__functions[funcLabel]

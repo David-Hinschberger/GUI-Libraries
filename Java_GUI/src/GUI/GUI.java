@@ -44,12 +44,10 @@ public class GUI extends Application {
 
     private HashMap<String, Input> inputs = new HashMap<>();
     private HashMap<String, Prompt> prompts= new HashMap<>();
+    private HashMap<String, PrintWindow> printWindows = new HashMap<>();
 
     //ignore below
 
-
-    //Hashmap of IDs mapped to the corresponding element
-    private static HashMap<String, ELEMENT> IDMap = new HashMap<>();
 
     //List of pairs with id as key and value being the field's prompt
     private static List<Pair<String, String>> fieldsList = new ArrayList<>();
@@ -121,6 +119,16 @@ public class GUI extends Application {
         grid.setVgap(5);
         grid.setHgap(5);
 
+        for(String label: printWindows.keySet()){
+            TextArea printWindow = new TextArea();
+            printWindow.setWrapText(false);
+            printWindow.setEditable(false);
+            VBox.setVgrow(printWindow, Priority.ALWAYS);
+            vbox.setAlignment(Pos.TOP_CENTER);
+            vbox.getChildren().add(grid);
+            vbox.getChildren().add(printWindow);
+        }
+
         for(String p: prompts.keySet()){
             Label label = new Label(prompts.get(p).getPrompt());
             GridPane.setConstraints(label, prompts.get(p).getCol(), prompts.get(p).getRow());
@@ -165,21 +173,10 @@ public class GUI extends Application {
                 }
                 GridPane.setConstraints(field, label.getCol(), label.getRow());
                 grid.getChildren().add(field);
-                }
             }
         }
 
         
-
-
-        final TextArea output = new TextArea();
-        output.setWrapText(false);
-        output.setEditable(false);
-
-        VBox.setVgrow(output, Priority.ALWAYS);
-        vbox.setAlignment(Pos.TOP_CENTER);
-        vbox.getChildren().add(grid);
-        vbox.getChildren().add(output);
 
 
         for (Pair<String, Object[]> data : buttonsList) {
