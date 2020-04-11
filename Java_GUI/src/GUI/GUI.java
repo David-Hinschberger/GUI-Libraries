@@ -1,26 +1,38 @@
 package GUI;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 public class GUI extends Application {
+
+    private static final int COLUMNS = 3;
+    private static final int PROMPTCOLUMN = 0;
+    private static final int INPUTCOLUMN = 1;
+    private static final int BUTTONCOLUMN = 2;
+    private static List<Prompt> promptList = new ArrayList<>();
+    private static List<Input> inputList = new ArrayList<>();
+    private static List<Function> functionList = new ArrayList<>();
 
     private static boolean debug = false;
 
@@ -28,180 +40,280 @@ public class GUI extends Application {
     private static String iconURL;
 
     //Grid for UI
-    private GridPane grid = new GridPane();
+    private HBox hBox = new HBox();
     private VBox vbox = new VBox();
     //Scene of application
-    private Scene scene = new Scene(vbox, 640, 480);
-    private static int leftRow = 0;
-    private static int rightRow = 0;
+    private Scene scene = new Scene(vbox, 670, 640);
 
-    //Hashmap of IDs mapped to the corresponding element
-    private static HashMap<String, ELEMENTS> IDMap = new HashMap<>();
+    private static HashMap<String, Input> inputs = new HashMap<>();
+    private static HashMap<String, Prompt> prompts = new HashMap<>();
+    private static HashMap<String, PrintWindow> printWindows = new HashMap<>();
+    private static HashMap<String, Function> functions = new HashMap<>();
+    private static int[] colRowCount = new int[COLUMNS];
 
-//    //list of pairs with id as key and value being the textfield's prompt
-//    private static List<Pair<String, String>> textFieldsList = new ArrayList<>();
+    /**
+     * Returns a list of labels added in bottom-down order in code (chronological).
+     *
+     * @return keys in the HashMap inputs sorted according to the index value of the Inputs
+     */
+    private List<String> getSortedLabels() {
+        return inputs.keySet().stream()
+            .sorted(Comparator.comparingInt(x -> inputs.get(x).getRow())).collect(
+                Collectors.toList());
+    }
 
-    //List of pairs with id as key and value being the field's prompt
-    private static List<Pair<String, String>> fieldsList = new ArrayList<>();
-    //list of pairs with id as key and value being a list of button prompt(string),
-    //ids of inputs to be connected to(string), index of the function to be called
-    //from either consumerList or functionsList (int), and a boolean that specifies
-    //consumerList or functionsList.
-    private static List<Pair<String, Object[]>> buttonsList = new ArrayList<>();
-    //Hashmap of IDs mapped to the corresponding button
-    private static HashMap<String, Button> buttonHashMap = new HashMap<>();
-    //Hashmap of IDs mapped to the corresponding TextField
-    private static HashMap<String, TextField> textFieldHashMap = new HashMap<>();
-    //List of functions
-    private static List<Function<String[], String>> functionsList = new ArrayList<>();
-    //List of Consumers
-    private static List<Consumer<String[]>> consumersList = new ArrayList<>();
+    /**
+     * Refreshes the input for all the variables stored from the data on the GUI
+     */
+    private void refreshInput() {
+        List<String> sortedLabels = getSortedLabels();
+        for (String label : sortedLabels) {
+            Input input = inputs.get(label);
+            if (input.getType() == FIELD.COMBO) {
+                input.setValue(((ComboBox<String>) (input.getEntry())).getValue());
+            } else{
+                String text = ((TextField) input.getEntry()).getText();
+                if(input.getType() == FIELD.FLOAT) {
+                    try {
+                        Double.parseDouble(text);
+                    } catch (NumberFormatException e) {
+                        text = "0";
+                    }
+                } else if (input.getType() == FIELD.INT) {
+                    try {
+                        Integer.parseInt(text);
+                    } catch (NumberFormatException e) {
+                        text = "0";
+                    }
+                }
+                input.setValue(text);
+            }
+        }
+    }
 
-    public static void setTitle(String title) {
+    /**
+     * Handles button press
+     *
+     * @param userFunction is the function the user writes to be called back upon.
+     */
+    private void buttonPressed(Consumer<GUI> userFunction) {
+        refreshInput();
+        userFunction.accept(this);
+    }
+
+    private void setup(Stage stage) {
+        if (title != null) {
+            stage.setTitle(title);
+        }
+        if (iconURL != null) {
+            stage.getIcons().add(new Image(iconURL));
+        }
+
+        VBox[] vBoxes = new VBox[COLUMNS];
+        hBox.setSpacing(10);
+
+        for (int i = 0; i < COLUMNS; i++) {
+            VBox vBox = new VBox();
+            vBox.setPadding(new Insets(5, 0, 5, 0));
+            hBox.getChildren().add(vBox);
+            HBox.setHgrow(vBox, Priority.ALWAYS);
+            vBoxes[i] = vBox;
+        }
+
+        vbox.getChildren().add(hBox);
+        vbox.setPadding(new Insets(5, 5, 5, 5));
+        vbox.setAlignment(Pos.TOP_CENTER);
+
+        for (String label : printWindows.keySet()) {
+            TextArea printWindow = new TextArea();
+            printWindow.setWrapText(false);
+            printWindow.setEditable(false);
+            VBox.setVgrow(printWindow, Priority.ALWAYS);
+            vbox.getChildren().add(printWindow);
+            printWindows.get(label).setEntry(printWindow);
+        }
+
+        int row = 0;
+        for (String p : prompts.keySet().stream()
+            .sorted(Comparator.comparingInt(x -> prompts.get(x).getRow())).collect(
+                Collectors.toList())) {
+            while (prompts.get(p).getRow() > row) {
+                Label spacer = new Label();
+                vBoxes[PROMPTCOLUMN].getChildren().add(spacer);
+                VBox.setMargin(spacer, new Insets(6, 2, 6, 2));
+                row++;
+            }
+            Label label = new Label(prompts.get(p).getPrompt());
+            label.setPrefWidth(200);
+            vBoxes[PROMPTCOLUMN].getChildren().add(label);
+            VBox.setMargin(label, new Insets(6, 2, 6, 2));
+            prompts.get(p).setEntry(label);
+            row++;
+        }
+
+        row = 0;
+        for (String sortedLabel : getSortedLabels()) {
+            Input label = inputs.get(sortedLabel);
+            while (label.getRow() > row) {
+                Label spacer = new Label();
+                vBoxes[INPUTCOLUMN].getChildren().add(spacer);
+                VBox.setMargin(spacer, new Insets(6, 2, 6, 2));
+                row++;
+            }
+            if (label.getType() == FIELD.COMBO) {
+                ComboBox<String> comboBox = new ComboBox<>(FXCollections
+                    .observableList(
+                        ((List<Object>) (label.getInitValue())).stream().map(Object::toString)
+                            .collect(Collectors.toList())));
+                comboBox.getSelectionModel().selectFirst();
+                label.setEntry(comboBox);
+                vBoxes[INPUTCOLUMN].getChildren().add(comboBox);
+                VBox.setMargin(comboBox, new Insets(2, 2, 2, 2));
+                inputs.get(sortedLabel).setEntry(comboBox);
+            } else {
+                TextField field = new TextField();
+                field.setText(label.getValue());
+                field.setPromptText(label.getPlaceholder());
+                field.setPrefColumnCount(23);
+                switch (label.getType()) {
+                    case FLOAT:
+                        field.textProperty().addListener(
+                            (observable, oldValue, newValue) ->
+                            {
+                                if (!newValue.matches("\\d*(\\.\\d*)?")) {
+                                    field.setText(oldValue);
+                                }
+                            });
+                        break;
+                    case INT:
+                        field.textProperty().addListener(
+                            (observable, oldValue, newValue) ->
+                            {
+                                if (!newValue.matches("\\d{0,10}")) {
+                                    field.setText(oldValue);
+                                }
+                            });
+                        break;
+                }
+                vBoxes[INPUTCOLUMN].getChildren().add(field);
+                VBox.setMargin(field, new Insets(2, 2, 2, 2));
+                inputs.get(sortedLabel).setEntry(field);
+            }
+            row++;
+        }
+
+        row = 0;
+
+        for (String funcLabel : functions.keySet().stream()
+            .sorted(Comparator.comparingInt(x -> functions.get(x).getRow())).collect(
+                Collectors.toList())) {
+            Function function = functions.get(funcLabel);
+            while (function.getRow() > row) {
+                Label spacer = new Label();
+                vBoxes[BUTTONCOLUMN].getChildren().add(spacer);
+                VBox.setMargin(spacer, new Insets(6, 2, 6, 2));
+                row++;
+            }
+            Button button = new Button(funcLabel);
+            vBoxes[BUTTONCOLUMN].getChildren().add(button);
+            VBox.setMargin(button, new Insets(2, 2, 2, 2));
+            button.setOnAction(e -> buttonPressed(function.getFunction()));
+            function.setEntry(button);
+            row++;
+        }
+
+        stage.setOnCloseRequest(e -> refreshInput());
+    }
+
+    public void addPrintWindow(String label) {
+        PrintWindow printWindow = new PrintWindow();
+        printWindows.put(label, printWindow);
+    }
+
+    public void addButton(String label, Consumer<GUI> function) {
+        Function f = new Function(function, colRowCount[BUTTONCOLUMN]++);
+        functions.put(label, f);
+
+    }
+
+    public void addText(String identifier, String prompt) {
+        addText(identifier, prompt, true);
+    }
+
+    public void addText(String identifier, String prompt, boolean alignLeft) {
+        Prompt p = new Prompt(prompt, alignLeft, colRowCount[PROMPTCOLUMN]++, PROMPTCOLUMN);
+        prompts.put(identifier, p);
+    }
+
+    public void addSpacer(int col) {
+        colRowCount[col]++;
+    }
+
+    /**
+     * Adds a field input
+     */
+    private void inputHelper(String label, int row, Object defValue, FIELD typeOfInput) {
+        inputs.put(label, new Input(row, defValue, typeOfInput));
+    }
+
+    /**
+     * Adds a field input
+     */
+    private void inputHelper(String label, int row, Object defValue, FIELD typeOfInput, String placeholder) {
+        inputs.put(label, new Input(row, defValue, typeOfInput, placeholder));
+    }
+
+    public void addIntInput(String label) {
+        addIntInput(label, "");
+    }
+
+    public void addIntInput(String label, String placeholder){
+        addIntInput(label, placeholder, 0);
+    }
+
+    public void addIntInput(String label, String placeholder, int defValue) {
+        inputHelper(label, colRowCount[INPUTCOLUMN]++, defValue, FIELD.INT, placeholder);
+    }
+
+    public void addStringInput(String label) {
+        addStringInput(label, "", "");
+    }
+
+    public void addStringInput(String label, String placeholder) {
+        addStringInput(label, "", placeholder);
+    }
+
+    public void addStringInput(String label, String placeholder, String defValue) {
+        inputHelper(label, colRowCount[INPUTCOLUMN]++, defValue, FIELD.STRING, placeholder);
+    }
+
+    public void addFloatInput(String label) {
+        addFloatInput(label, "");
+    }
+
+    public void addFloatInput(String label, String placeholder){
+        addFloatInput(label, placeholder, 0d);
+    }
+
+    public void addFloatInput(String label, String placeholder, double defValue){
+        inputHelper(label, colRowCount[INPUTCOLUMN]++, defValue, FIELD.FLOAT, placeholder);
+    }
+
+    public void addComboInput(String prompt, List choices) {
+        int row = Math.max(colRowCount[PROMPTCOLUMN], colRowCount[INPUTCOLUMN]);
+        Prompt p = new Prompt(prompt, true, row, PROMPTCOLUMN);
+        prompts.put(prompt, p);
+        inputHelper("__" + prompt + "__", row, choices, FIELD.COMBO);
+        colRowCount[PROMPTCOLUMN] = row + 1;
+        colRowCount[INPUTCOLUMN] = row + 1;
+    }
+
+    public void setTitle(String title) {
         GUI.title = title;
     }
 
-    private static void checkDuplicateID(String id) {
-        if (IDMap.containsKey(id)) {
-            throw new DuplicateIDException(IDMap.get(id).toString());
-        }
-    }
-
-    private static void checkUnreferencedID(String id) {
-        if (!IDMap.containsKey(id)) {
-            throw new UnreferencedIDException(id);
-        }
-    }
-
-    private static void checkUnreferencedIDs(String... ids) {
-        for (String id : ids) {
-            checkUnreferencedID(id);
-        }
-    }
-
-    public static boolean addField(FIELDS field, String id, String prompt)
-        throws DuplicateIDException {
-        checkDuplicateID(id);
-        ELEMENTS elem = field == FIELDS.STRINGFIELD ? ELEMENTS.STRINGFIELD :
-            field == FIELDS.DECIMALFIELD ? ELEMENTS.DECIMALFIELD :
-                field == FIELDS.INTFIELD ? ELEMENTS.INTFIELD :
-                    null;
-        IDMap.put(id, elem);
-        return fieldsList.add(new Pair<>(id, prompt));
-    }
-
-    static boolean addIntField(String id, String prompt) throws DuplicateIDException {
-        checkDuplicateID(id);
-        IDMap.put(id, ELEMENTS.INTFIELD);
-        return fieldsList.add(new Pair<>(id, prompt));
-    }
-
-    public static boolean addTextField(String id, String prompt) throws DuplicateIDException {
-        checkDuplicateID(id);
-        IDMap.put(id, ELEMENTS.STRINGFIELD);
-        return fieldsList.add(new Pair<>(id, prompt));
-    }
-
-    public static boolean addPrintButton(String id, String prompt, Consumer<String[]> function,
-        String... ids) {
-        checkDuplicateID(id);
-        checkUnreferencedIDs(ids);
-        IDMap.put(id, ELEMENTS.BUTTON);
-        consumersList.add(function);
-        return buttonsList
-            .add(new Pair<>(id, new Object[]{prompt, ids, consumersList.size() - 1, false}));
-    }
-
-    public static boolean addGUIButton(String id, String prompt, Function<String[], String> function,
-        String... ids) {
-        checkDuplicateID(id);
-        checkUnreferencedIDs(ids);
-        IDMap.put(id, ELEMENTS.BUTTON);
-        functionsList.add(function);
-        return buttonsList
-            .add(new Pair<>(id, new Object[]{prompt, ids, functionsList.size() - 1, true}));
-    }
-
-    public static void setIcon(String icon) {
+    public void setIcon(String icon) {
         GUI.iconURL = icon;
-    }
-
-    public static void setDebug(boolean debug) {
-        GUI.debug = debug;
-    }
-
-    private void setup() {
-        grid.setPadding(new Insets(10, 10, 10, 10));
-        grid.setVgap(5);
-        grid.setHgap(5);
-
-        final TextArea output = new TextArea();
-        output.setWrapText(false);
-        output.setEditable(false);
-
-        VBox.setVgrow(output, Priority.ALWAYS);
-        vbox.setAlignment(Pos.TOP_CENTER);
-        vbox.getChildren().add(grid);
-        vbox.getChildren().add(output);
-
-        final Label test = new Label("Enter a number:");
-        GridPane.setConstraints(test, 0, leftRow++);
-        grid.getChildren().add(test);
-
-        for (Pair<String, String> data : fieldsList) {
-            TextField field = new TextField();
-            field.setPromptText(data.getValue());
-            field.setPrefColumnCount(20);
-            switch (IDMap.get(data.getKey())) {
-                case DECIMALFIELD:
-                    field.textProperty().addListener(
-                        (observable, oldValue, newValue) ->
-                        {
-                            if (!newValue.matches("\\d*(\\.\\d*)?")) {
-                                field.setText(oldValue);
-                            }
-                        });
-                    break;
-                case INTFIELD:
-                    field.textProperty().addListener(
-                        (observable, oldValue, newValue) ->
-                        {
-                            if (!newValue.matches("\\d{0,10}")) {
-                                field.setText(oldValue);
-                            }
-                        });
-                    break;
-            }
-            GridPane.setConstraints(field, 0, leftRow++);
-            grid.getChildren().add(field);
-            textFieldHashMap.put(data.getKey(), field);
-        }
-
-        final Label outputLabel = new Label("Output:");
-        GridPane.setConstraints(outputLabel, 0, leftRow++);
-        grid.getChildren().add(outputLabel);
-
-        for (Pair<String, Object[]> data : buttonsList) {
-            Button button = new Button((String) data.getValue()[0]);
-            GridPane.setConstraints(button, 1, rightRow++);
-            grid.getChildren().add(button);
-            button.setOnAction(e -> {
-                List<String> arguments = new ArrayList<>();
-                for (String id : (String[]) data.getValue()[1]) {
-                    arguments.add(textFieldHashMap.get(id).getText());
-                }
-
-                if ((boolean) data.getValue()[3]) {
-                    output.setText(functionsList.get((int) data.getValue()[2])
-                        .apply(arguments.toArray(new String[0])));
-                } else {
-                    consumersList.get((int) data.getValue()[2])
-                        .accept(arguments.toArray(new String[0]));
-                }
-            });
-            buttonHashMap.put(data.getKey(), button);
-        }
-
     }
 
     @Override
@@ -213,16 +325,12 @@ public class GUI extends Application {
             scene.widthProperty().addListener(
                 (observableValue, oldSceneWidth, newSceneWidth) -> System.out
                     .println("Width: " + newSceneWidth));
-            scene.widthProperty().addListener(
+            scene.heightProperty().addListener(
                 (observableValue, oldSceneHeight, newSceneHeight) -> System.out
                     .println("Height: " + newSceneHeight));
         }
 
-        setup();
-        stage.setTitle(title);
-        if (iconURL != null) {
-            stage.getIcons().add(new Image(iconURL));
-        }
+        setup(stage);
 
         //resizable
         stage.setResizable(true);
@@ -232,8 +340,85 @@ public class GUI extends Application {
         stage.show();
     }
 
-    public void start() {
+    public void startGUI() {
         launch();
+    }
+
+    public String getStr(String label) {
+        if (printWindows.containsKey(label)) {
+            return printWindows.get(label).getEntry().getText();
+        } else if (inputs.containsKey("__" + label + "__")) {
+            return inputs.get("__" + label + "__").getValue();
+        } else if (inputs.containsKey(label)) {
+            return inputs.get(label).getValue();
+        } else if (prompts.containsKey(label)) {
+            return prompts.get(label).getEntry().getText();
+        } else {
+            // throw label not found error?
+            return null;
+        }
+    }
+
+    public int getInt(String label) {
+        if (printWindows.containsKey(label)) {
+            return Integer.parseInt(printWindows.get(label).getEntry().getText());
+        } else if (inputs.containsKey("__" + label + "__")) {
+            return Integer.parseInt(inputs.get("__" + label + "__").getValue());
+        } else if (inputs.containsKey(label)) {
+            return Integer.parseInt(inputs.get(label).getValue());
+        } else if (prompts.containsKey(label)) {
+            return Integer.parseInt(prompts.get(label).getEntry().getText());
+        } else {
+            // throw label not found error?
+            return Integer.MIN_VALUE;
+        }
+    }
+
+    public double getFloat(String label) {
+        if (printWindows.containsKey(label)) {
+            return Double.parseDouble(printWindows.get(label).getEntry().getText());
+        } else if (inputs.containsKey("__" + label + "__")) {
+            return Double.parseDouble(inputs.get("__" + label + "__").getValue());
+        } else if (inputs.containsKey(label)) {
+            return Double.parseDouble(inputs.get(label).getValue());
+        } else if (prompts.containsKey(label)) {
+            return Double.parseDouble(prompts.get(label).getEntry().getText());
+        } else {
+            // throw label not found error?
+            return Double.NaN;
+        }
+    }
+
+    public void set(String label, Object value) {
+        set(label, value, false);
+    }
+
+    public void set(String label, Object value, boolean append) {
+        if (printWindows.containsKey(label)) {
+            printWindows.get(label).getEntry().setText(value.toString());
+        } else if (prompts.containsKey(label)) {
+            if (append) {
+                prompts.get(label).getEntry()
+                    .setText(prompts.get(label).getEntry().getText() + value.toString());
+            } else {
+                prompts.get(label).getEntry().setText(value.toString());
+            }
+        } else if (inputs.containsKey(label)) {
+            Control object = inputs.get(label).getEntry();
+            if (inputs.get(label).getType() == FIELD.COMBO) {
+                ((ComboBox<String>) object).setPlaceholder((Node) value);
+            } else {
+                if (append) {
+                    ((TextField) object).setText(((TextField) object).getText() + value.toString());
+                } else {
+                    ((TextField) object).setText(value.toString());
+                }
+            }
+        }
+    }
+
+    public void setDebug(boolean debug) {
+        GUI.debug = debug;
     }
 
 }

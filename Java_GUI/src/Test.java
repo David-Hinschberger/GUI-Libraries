@@ -1,11 +1,23 @@
-import static GUI.FIELDS.*;
-import GUI.*;
+import GUI.GUI;
+import java.util.List;
 
 public class Test {
 
-    private static String fizzbuzz(String... args) {
+    private static void addTwoValues(GUI screen){
+        int int1 = screen.getInt("int1");
+        int int2 = screen.getInt("int2");
+        int total = int1 + int2;
+        screen.set("window1", total);
+    }
+
+    private static void floatAdd1(GUI screen){
+        screen.set("window1", screen.getFloat("float1") + 1);
+        screen.set("float1", screen.getFloat("float1") + 1);
+    }
+
+    private static void fizzbuzz1(GUI screen) {
         StringBuilder result = new StringBuilder();
-        int limit = Integer.parseInt(args[0]);
+        int limit = Integer.parseInt(screen.getStr("int1"));
         for (int i = 1; i <= limit; i++) {
             StringBuilder sb = new StringBuilder();
             if (i % 3 == 0) {
@@ -20,54 +32,79 @@ public class Test {
             sb.append(System.lineSeparator());
             result.append(sb);
         }
-        return result.toString();
-    }
-
-    private static void printThings(String... args) {
-        for (String s : args) {
-            if (!s.equals("")) {
-                System.out.println(s);
-            }
-        }
-    }
-
-    static void squareNum(String... args) {
-        String value = args[0];
-        int temp = Integer.parseInt(value);
-        System.out.println(temp * temp);
-    }
-
-    static String function() {
-        int foo = 42;
-        return "Answer is: " + Integer.toString(foo);
+        screen.set("window1", result.toString());
     }
 
 
     public static void main(String[] args) {
-        GUI.setTitle("Windows 11");
-        GUI.setIcon("https://puu.sh/F5xQD.png");
+        int int1 = 10;
+        int int2 = 20;
+        double float1 = 123.45;
 
-        GUI.addTextField("Enter a number", "Enter a number");
-        GUI.addPrintButton("squareBtn", "Square this number", Test::squareNum, "Enter a number");
+        GUI gui = new GUI();
 
-        GUI.addField(DECIMALFIELD, "identifier", "Decimal here");
+        gui.addText("label1", "Testing data entry", false);
+        gui.addSpacer(1);
 
-//        GUI.addTextField("1", "Enter gibberish here");
-//        GUI.addTextField("2", "Enter gibberish here");
-//        GUI.addTextField("3", "Enter gibberish here");
-//        GUI.addTextField("4", "Enter gibberish here");
-//        GUI.addTextField("5", "Enter gibberish here");
-//        GUI.addPrintButton("printBtn", "Print things!", Test::printThings, "1", "2",
-//           . "4", "5");
+        gui.addText("label2", "Enter int 1");
+        gui.addIntInput("int1", "int1", int1);
 
-        GUI.addTextField("fizzbuzz", "Fizz Buzz until: ");
-        GUI.addGUIButton("fizzbuzzBtn", "FizzBuzz!", Test::fizzbuzz, "fizzbuzz");
+        gui.addText("label3", "Enter int 2");
+        gui.addIntInput("int2", "int2", int2);
 
-//        GUI.addGUIButton("fizzbuzzBtn", "FizzBuzz!", Test::addTwoNumbers, "int1", "int2");
+        gui.addText("label4", "Enter float 1");
+        gui.addFloatInput("float1", "float1", float1);
 
-        GUI.setDebug(true);
+        gui.addText("label5", "Enter string 1");
+        gui.addStringInput("str1");
 
-        new GUI().start();
+        List<String> fruits = List.of("Apple", "Pear", "Grape", "Orange");
+        gui.addComboInput("Enter your favorite fruit", fruits);
+        gui.addButton("add", Test::addTwoValues);
+        gui.addButton("Float + 1", Test::floatAdd1);
+        gui.addButton("Fizzbuzz until int1", Test::fizzbuzz1);
+
+        gui.addText("Label6", "Total");
+        gui.addIntInput("total");
+
+        gui.addPrintWindow("window1");
+        gui.setIcon("https://puu.sh/F5xQD.png");
+
+        gui.setTitle("Windows 11");
+
+        System.out.println("Before inputs");
+        System.out.println("int1 is " + int1);
+        System.out.println("int2 is " + int2);
+        System.out.println("float is " + gui.getFloat("float1"));
+        System.out.println("String is " + gui.getStr("str1"));
+        System.out.println("Total is " + gui.getInt("total"));
+        System.out.println("Numeric total is " + (int1 + int2 + gui.getFloat("float1")));
+        System.out.println("Favorite fruit is " + gui.getStr("Enter your favorite fruit"));
+
+        gui.startGUI();
+        int1 = gui.getInt("int1");
+        int2 = gui.getInt("int2");
+
+        System.out.println("\n\nAfter inputs");
+        System.out.println("int1 is " + int1);
+        System.out.println("int2 is " + int2);
+        System.out.println("float is " + gui.getFloat("float1"));
+        System.out.println("String is " + gui.getStr("str1"));
+        System.out.println("Total is " + gui.getInt("total"));
+        System.out.println("Numeric total is " + (int1 + int2 + gui.getFloat("float1")));
+        System.out.println("Favorite fruit is " + gui.getStr("Enter your favorite fruit"));
+    }
+
+
+    private static void squareNum(GUI screen) {
+        String value = screen.getStr("Enter a number");
+        int temp = Integer.parseInt(value);
+        screen.set("output", temp * temp);
+    }
+
+    private static void favoriteFruit(GUI screen){
+        String favoriteFruit = screen.getStr("Favorite fruit?");
+        screen.set("output", favoriteFruit);
     }
 
 }
