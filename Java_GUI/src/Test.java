@@ -32,13 +32,17 @@ public class Test {
 
     public static void main(String[] args) {
         GUI gui = new GUI();
-        gui.addTitle("Windows 11");
-        gui.addIcon("https://puu.sh/F5xQD.png");
-
+        gui.setTitle("Windows 11");
+        gui.setIcon("https://puu.sh/F5xQD.png");
         gui.addPrintWindow("output");
+
+
+        gui.addText("Hello World", "Hello World");
 
         gui.addStringInput("Enter a number", "Enter a number");
         gui.addButton("Square", Test::squareNum);
+
+        gui.addSpacer(2);
 
         gui.addFloatInput("identifier");
 

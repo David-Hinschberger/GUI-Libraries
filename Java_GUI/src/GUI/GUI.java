@@ -84,14 +84,6 @@ public class GUI extends Application {
         userFunction.accept(this);
     }
 
-    /**
-     * Adds a field input
-     */
-    private void inputHelper(String label, int col, int row, Object defValue, FIELD typeOfInput) {
-        inputs.put(label, new Input(col, row, defValue, typeOfInput));
-    }
-
-
     private void setup(Stage stage) {
         if (title != null) {
             stage.setTitle(title);
@@ -117,6 +109,7 @@ public class GUI extends Application {
 
         for (String p : prompts.keySet()) {
             Label label = new Label(prompts.get(p).getPrompt());
+            label.setPrefWidth(200);
             GridPane.setConstraints(label, prompts.get(p).getCol(), prompts.get(p).getRow());
             grid.getChildren().add(label);
             prompts.get(p).setEntry(label);
@@ -191,10 +184,18 @@ public class GUI extends Application {
 
     public void addText(String identifier, String prompt, boolean alignLeft) {
         Prompt p = new Prompt(prompt, alignLeft, colRowCount[PROMPTCOLUMN]++, PROMPTCOLUMN);
+        prompts.put(identifier, p);
     }
 
     public void addSpacer(int col) {
         colRowCount[col]++;
+    }
+
+    /**
+     * Adds a field input
+     */
+    private void inputHelper(String label, int col, int row, Object defValue, FIELD typeOfInput) {
+        inputs.put(label, new Input(col, row, defValue, typeOfInput));
     }
 
     public void addIntInput(String label) {
@@ -229,15 +230,11 @@ public class GUI extends Application {
         colRowCount[INPUTCOLUMN] = row + 1;
     }
 
-    public void addTitle(String title) {
+    public void setTitle(String title) {
         GUI.title = title;
     }
 
-    public void addIcon(String icon) {
-        GUI.iconURL = icon;
-    }
-
-    public static void setIcon(String icon) {
+    public void setIcon(String icon) {
         GUI.iconURL = icon;
     }
 
@@ -273,9 +270,9 @@ public class GUI extends Application {
         if (printWindows.containsKey(label)) {
             return printWindows.get(label).getEntry().getText();
         } else if (inputs.containsKey("__" + label + "__")) {
-            return (String) inputs.get("__" + label + "__").getValue();
+            return inputs.get("__" + label + "__").getValue();
         } else if (inputs.containsKey(label)) {
-            return (String) (inputs.get(label).getValue());
+            return inputs.get(label).getValue();
         } else if (prompts.containsKey(label)) {
             return prompts.get(label).getEntry().getText();
         } else {
@@ -288,9 +285,9 @@ public class GUI extends Application {
         if (printWindows.containsKey(label)) {
             return Integer.parseInt(printWindows.get(label).getEntry().getText());
         } else if (inputs.containsKey("__" + label + "__")) {
-            return Integer.parseInt((String) (inputs.get("__" + label + "__").getValue()));
+            return Integer.parseInt(inputs.get("__" + label + "__").getValue());
         } else if (inputs.containsKey(label)) {
-            return Integer.parseInt((String) (inputs.get(label).getValue()));
+            return Integer.parseInt(inputs.get(label).getValue());
         } else if (prompts.containsKey(label)) {
             return Integer.parseInt(prompts.get(label).getEntry().getText());
         } else {
@@ -303,9 +300,9 @@ public class GUI extends Application {
         if (printWindows.containsKey(label)) {
             return Double.parseDouble(printWindows.get(label).getEntry().getText());
         } else if (inputs.containsKey("__" + label + "__")) {
-            return Double.parseDouble((String) (inputs.get("__" + label + "__").getValue()));
+            return Double.parseDouble(inputs.get("__" + label + "__").getValue());
         } else if (inputs.containsKey(label)) {
-            return Double.parseDouble((String) (inputs.get(label).getValue()));
+            return Double.parseDouble(inputs.get(label).getValue());
         } else if (prompts.containsKey(label)) {
             return Double.parseDouble(prompts.get(label).getEntry().getText());
         } else {
