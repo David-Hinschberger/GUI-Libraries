@@ -25,7 +25,7 @@ class Input {
      * @param typeOfInput
      */
     Input(int col, int row, Object defValue, FIELD typeOfInput) {
-        this.value = typeOfInput == FIELD.COMBO ? ((List<Object>) defValue).get(0) : defValue;
+        this.value = typeOfInput == FIELD.COMBO ? ((List<String>) defValue).get(0) : defValue;
         this.initValue = defValue;
         this.type = typeOfInput;
         this.col = col;
@@ -43,10 +43,6 @@ class Input {
 
     Object getInitValue() {
         return initValue;
-    }
-
-    void setInitValue(Object initValue) {
-        this.initValue = initValue;
     }
 
     FIELD getType() {

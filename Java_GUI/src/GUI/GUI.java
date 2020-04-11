@@ -10,9 +10,11 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -21,7 +23,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 public class GUI extends Application {
 
@@ -42,29 +43,29 @@ public class GUI extends Application {
     private static int leftRow = 0;
     private static int rightRow = 0;
 
-    private HashMap<String, Input> inputs = new HashMap<>();
-    private HashMap<String, Prompt> prompts = new HashMap<>();
-    private HashMap<String, PrintWindow> printWindows = new HashMap<>();
-    private HashMap<String, Function> functions = new HashMap<>();
-    private int[] colRowCount = new int[3];
+    private static HashMap<String, Input> inputs = new HashMap<>();
+    private static HashMap<String, Prompt> prompts = new HashMap<>();
+    private static HashMap<String, PrintWindow> printWindows = new HashMap<>();
+    private static HashMap<String, Function> functions = new HashMap<>();
+    private static int[] colRowCount = new int[3];
     //ignore below
 
 
-    //List of pairs with id as key and value being the field's prompt
-    private static List<Pair<String, String>> fieldsList = new ArrayList<>();
-    //list of pairs with id as key and value being a list of button prompt(string),
-    //ids of inputs to be connected to(string), index of the function to be called
-    //from either consumerList or functionsList (int), and a boolean that specifies
-    //consumerList or functionsList.
-    private static List<Pair<String, Object[]>> buttonsList = new ArrayList<>();
-    //Hashmap of IDs mapped to the corresponding button
-    private static HashMap<String, Button> buttonHashMap = new HashMap<>();
-    //Hashmap of IDs mapped to the corresponding TextField
-    private static HashMap<String, TextField> textFieldHashMap = new HashMap<>();
-    //List of functions
-    private static List<java.util.function.Function> functionsList = new ArrayList<>();
-    //List of Consumers
-    private static List<Consumer<String[]>> consumersList = new ArrayList<>();
+//    //List of pairs with id as key and value being the field's prompt
+//    private static List<Pair<String, String>> fieldsList = new ArrayList<>();
+//    //list of pairs with id as key and value being a list of button prompt(string),
+//    //ids of inputs to be connected to(string), index of the function to be called
+//    //from either consumerList or functionsList (int), and a boolean that specifies
+//    //consumerList or functionsList.
+//    private static List<Pair<String, Object[]>> buttonsList = new ArrayList<>();
+//    //Hashmap of IDs mapped to the corresponding button
+//    private static HashMap<String, Button> buttonHashMap = new HashMap<>();
+//    //Hashmap of IDs mapped to the corresponding TextField
+//    private static HashMap<String, TextField> textFieldHashMap = new HashMap<>();
+//    //List of functions
+//    private static List<java.util.function.Function> functionsList = new ArrayList<>();
+//    //List of Consumers
+//    private static List<Consumer<String[]>> consumersList = new ArrayList<>();
 
     /**
      * Returns a list of labels added in bottom-down order in code (chronological).
@@ -140,8 +141,8 @@ public class GUI extends Application {
         for (String sortedLabel : getSortedLabels()) {
             Input label = inputs.get(sortedLabel);
             if (label.getType() == FIELD.COMBO) {
-                ComboBox<Object> comboBox = new ComboBox<>(FXCollections
-                    .observableList((List<Object>) label.getInitValue()));
+                ComboBox<String> comboBox = new ComboBox<>(FXCollections
+                    .observableList((List<String>) label.getInitValue()));
                 label.setEntry(comboBox);
                 GridPane.setConstraints(comboBox, label.getCol(), label.getRow());
                 inputs.get(label).setEntry(comboBox);
@@ -180,7 +181,7 @@ public class GUI extends Application {
             Button button = new Button(funcLabel);
             GridPane.setConstraints(button, function.getCol(), function.getRow());
             grid.getChildren().add(button);
-            button.setOnAction(e -> function.getFunction().accept(this));
+            button.setOnAction(e -> buttonPressed(function.getFunction()));
             function.setEntry(button);
         }
 
@@ -288,7 +289,7 @@ public class GUI extends Application {
             return (String) inputs.get("__" + label + "__").getValue();
         } else if (inputs.containsKey(label)) {
             return (String) inputs.get(label).getValue();
-        } else if (prompts.containsKey(label)){
+        } else if (prompts.containsKey(label)) {
             return prompts.get(label).getEntry().getText();
         } else {
             // throw label not found error?
@@ -296,14 +297,14 @@ public class GUI extends Application {
         }
     }
 
-    public int getInt(String label){
-        if(printWindows.containsKey(label)){
+    public int getInt(String label) {
+        if (printWindows.containsKey(label)) {
             return Integer.parseInt(printWindows.get(label).getEntry().getText());
         } else if (inputs.containsKey("__" + label + "__")) {
             return Integer.parseInt((String) inputs.get("__" + label + "__").getValue());
         } else if (inputs.containsKey(label)) {
             return Integer.parseInt((String) inputs.get(label).getValue());
-        } else if (prompts.containsKey(label)){
+        } else if (prompts.containsKey(label)) {
             return Integer.parseInt(prompts.get(label).getEntry().getText());
         } else {
             // throw label not found error?
@@ -311,14 +312,14 @@ public class GUI extends Application {
         }
     }
 
-    public double getFloat(String label){
-        if(printWindows.containsKey(label)){
+    public double getFloat(String label) {
+        if (printWindows.containsKey(label)) {
             return Double.parseDouble(printWindows.get(label).getEntry().getText());
         } else if (inputs.containsKey("__" + label + "__")) {
             return Double.parseDouble((String) inputs.get("__" + label + "__").getValue());
         } else if (inputs.containsKey(label)) {
             return Double.parseDouble((String) inputs.get(label).getValue());
-        } else if (prompts.containsKey(label)){
+        } else if (prompts.containsKey(label)) {
             return Double.parseDouble(prompts.get(label).getEntry().getText());
         } else {
             // throw label not found error?
@@ -326,7 +327,33 @@ public class GUI extends Application {
         }
     }
 
-    
+    public void set(String label, Object value) {
+        set(label, value, false);
+    }
+
+    public void set(String label, Object value, boolean append) {
+        if (printWindows.containsKey(label)) {
+            printWindows.get(label).getEntry().setText(value.toString());
+        } else if (prompts.containsKey(label)) {
+            if (append) {
+                prompts.get(label).getEntry()
+                    .setText(prompts.get(label).getEntry().getText() + value.toString());
+            } else {
+                prompts.get(label).getEntry().setText(value.toString());
+            }
+        } else if (inputs.containsKey(label)) {
+            Control object = inputs.get(label).getEntry();
+            if (inputs.get(label).getType() == FIELD.COMBO) {
+                ((ComboBox<String>) object).setPlaceholder((Node) value);
+            } else {
+                if (append) {
+                    ((TextField) object).setText(((TextField) object).getText() + value.toString());
+                } else {
+                    ((TextField) object).setText(value.toString());
+                }
+            }
+        }
+    }
 
     public void setDebug(boolean debug) {
         GUI.debug = debug;
