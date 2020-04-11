@@ -9,7 +9,7 @@ import javafx.scene.control.Control;
 class Input {
 
     private static int count = 0;
-    private Object value;
+    private String value;
     private Object initValue;
     private FIELD type;
     private int col;
@@ -25,7 +25,7 @@ class Input {
      * @param typeOfInput
      */
     Input(int col, int row, Object defValue, FIELD typeOfInput) {
-        this.value = typeOfInput == FIELD.COMBO ? ((List<String>) defValue).get(0) : defValue;
+        this.value = typeOfInput == FIELD.COMBO ? ((List<String>) defValue).get(0) : defValue.toString();
         this.initValue = defValue;
         this.type = typeOfInput;
         this.col = col;
@@ -33,11 +33,11 @@ class Input {
         this.index = ++count;
     }
 
-    Object getValue() {
+    String getValue() {
         return value;
     }
 
-    void setValue(Object value) {
+    void setValue(String value) {
         this.value = value;
     }
 

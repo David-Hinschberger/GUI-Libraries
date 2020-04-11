@@ -2,7 +2,7 @@ import GUI.*;
 
 public class Test {
 
-    private static String fizzbuzz(GUI screen) {
+    private static void fizzbuzz(GUI screen) {
         StringBuilder result = new StringBuilder();
         int limit = Integer.parseInt(screen.getStr("Enter a number"));
         for (int i = 1; i <= limit; i++) {
@@ -19,14 +19,14 @@ public class Test {
             sb.append(System.lineSeparator());
             result.append(sb);
         }
-        return result.toString();
+        screen.set("output", result.toString());
     }
 
 
-    static void squareNum(GUI screen) {
+    private static void squareNum(GUI screen) {
         String value = screen.getStr("Enter a number");
         int temp = Integer.parseInt(value);
-        System.out.println(temp * temp);
+        screen.set("output2", temp * temp);
     }
 
 
@@ -35,13 +35,15 @@ public class Test {
         gui.addTitle("Windows 11");
         gui.addIcon("https://puu.sh/F5xQD.png");
 
+        gui.addPrintWindow("output");
+
         gui.addStringInput("Enter a number", "Enter a number");
-        gui.addButton("squareBtn", Test::squareNum);
+        gui.addButton("Square", Test::squareNum);
 
         gui.addFloatInput("identifier");
 
         gui.addStringInput("fizzbuzz");
-        gui.addButton("fizzbuzzBtn", Test::fizzbuzz);
+        gui.addButton("FizzBuzz", Test::fizzbuzz);
 
         gui.setDebug(true);
 

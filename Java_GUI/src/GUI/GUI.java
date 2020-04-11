@@ -40,32 +40,12 @@ public class GUI extends Application {
     private VBox vbox = new VBox();
     //Scene of application
     private Scene scene = new Scene(vbox, 670, 640);
-    private static int leftRow = 0;
-    private static int rightRow = 0;
 
     private static HashMap<String, Input> inputs = new HashMap<>();
     private static HashMap<String, Prompt> prompts = new HashMap<>();
     private static HashMap<String, PrintWindow> printWindows = new HashMap<>();
     private static HashMap<String, Function> functions = new HashMap<>();
     private static int[] colRowCount = new int[3];
-    //ignore below
-
-
-//    //List of pairs with id as key and value being the field's prompt
-//    private static List<Pair<String, String>> fieldsList = new ArrayList<>();
-//    //list of pairs with id as key and value being a list of button prompt(string),
-//    //ids of inputs to be connected to(string), index of the function to be called
-//    //from either consumerList or functionsList (int), and a boolean that specifies
-//    //consumerList or functionsList.
-//    private static List<Pair<String, Object[]>> buttonsList = new ArrayList<>();
-//    //Hashmap of IDs mapped to the corresponding button
-//    private static HashMap<String, Button> buttonHashMap = new HashMap<>();
-//    //Hashmap of IDs mapped to the corresponding TextField
-//    private static HashMap<String, TextField> textFieldHashMap = new HashMap<>();
-//    //List of functions
-//    private static List<java.util.function.Function> functionsList = new ArrayList<>();
-//    //List of Consumers
-//    private static List<Consumer<String[]>> consumersList = new ArrayList<>();
 
     /**
      * Returns a list of labels added in bottom-down order in code (chronological).
@@ -84,7 +64,13 @@ public class GUI extends Application {
     private void refreshInput() {
         List<String> sortedLabels = getSortedLabels();
         for (String label : sortedLabels) {
-            inputs.get(label).setValue(inputs.get(label).getEntry());
+            Input input = inputs.get(label);
+            if(input.getType() == FIELD.COMBO){
+                input.setValue(((ComboBox<String>) (input.getEntry())).getValue());
+            } else{
+                input.setValue(((TextField) input.getEntry()).getText());
+            }
+
         }
     }
 
@@ -106,7 +92,7 @@ public class GUI extends Application {
     }
 
 
-    private void startInput(Stage stage) {
+    private void setup(Stage stage) {
         if (title != null) {
             stage.setTitle(title);
         }
@@ -117,14 +103,14 @@ public class GUI extends Application {
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setVgap(5);
         grid.setHgap(5);
+        vbox.setAlignment(Pos.TOP_CENTER);
+        vbox.getChildren().add(grid);
 
         for (String label : printWindows.keySet()) {
             TextArea printWindow = new TextArea();
             printWindow.setWrapText(false);
             printWindow.setEditable(false);
             VBox.setVgrow(printWindow, Priority.ALWAYS);
-            vbox.setAlignment(Pos.TOP_CENTER);
-            vbox.getChildren().add(grid);
             vbox.getChildren().add(printWindow);
             printWindows.get(label).setEntry(printWindow);
         }
@@ -172,7 +158,7 @@ public class GUI extends Application {
                 }
                 GridPane.setConstraints(field, label.getCol(), label.getRow());
                 grid.getChildren().add(field);
-                inputs.get(label).setEntry(field);
+                inputs.get(sortedLabel).setEntry(field);
             }
         }
 
@@ -190,6 +176,7 @@ public class GUI extends Application {
 
     public void addPrintWindow(String label) {
         PrintWindow printWindow = new PrintWindow(printWindows.size());
+        printWindows.put(label, printWindow);
     }
 
     public void addButton(String label, Consumer<GUI> function) {
@@ -268,7 +255,7 @@ public class GUI extends Application {
                     .println("Height: " + newSceneHeight));
         }
 
-        startInput(stage);
+        setup(stage);
 
         //resizable
         stage.setResizable(true);
@@ -288,7 +275,7 @@ public class GUI extends Application {
         } else if (inputs.containsKey("__" + label + "__")) {
             return (String) inputs.get("__" + label + "__").getValue();
         } else if (inputs.containsKey(label)) {
-            return (String) inputs.get(label).getValue();
+            return (String) (inputs.get(label).getValue());
         } else if (prompts.containsKey(label)) {
             return prompts.get(label).getEntry().getText();
         } else {
@@ -301,9 +288,9 @@ public class GUI extends Application {
         if (printWindows.containsKey(label)) {
             return Integer.parseInt(printWindows.get(label).getEntry().getText());
         } else if (inputs.containsKey("__" + label + "__")) {
-            return Integer.parseInt((String) inputs.get("__" + label + "__").getValue());
+            return Integer.parseInt((String) (inputs.get("__" + label + "__").getValue()));
         } else if (inputs.containsKey(label)) {
-            return Integer.parseInt((String) inputs.get(label).getValue());
+            return Integer.parseInt((String) (inputs.get(label).getValue()));
         } else if (prompts.containsKey(label)) {
             return Integer.parseInt(prompts.get(label).getEntry().getText());
         } else {
@@ -316,9 +303,9 @@ public class GUI extends Application {
         if (printWindows.containsKey(label)) {
             return Double.parseDouble(printWindows.get(label).getEntry().getText());
         } else if (inputs.containsKey("__" + label + "__")) {
-            return Double.parseDouble((String) inputs.get("__" + label + "__").getValue());
+            return Double.parseDouble((String) (inputs.get("__" + label + "__").getValue()));
         } else if (inputs.containsKey(label)) {
-            return Double.parseDouble((String) inputs.get(label).getValue());
+            return Double.parseDouble((String) (inputs.get(label).getValue()));
         } else if (prompts.containsKey(label)) {
             return Double.parseDouble(prompts.get(label).getEntry().getText());
         } else {
@@ -358,6 +345,5 @@ public class GUI extends Application {
     public void setDebug(boolean debug) {
         GUI.debug = debug;
     }
-
 
 }
