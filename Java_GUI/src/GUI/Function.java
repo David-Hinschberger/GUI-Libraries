@@ -6,13 +6,11 @@ import javafx.scene.control.Button;
 class Function {
     private Consumer<GUI> function;
     private int row;
-    private int col;
     private Button entry;
 
-    Function(Consumer<GUI> function, int row, int col){
+    Function(Consumer<GUI> function, int row){
         this.function = function;
         this.row = row;
-        this.col = col;
     }
 
     Consumer<GUI> getFunction() {
@@ -21,10 +19,6 @@ class Function {
 
     int getRow() {
         return row;
-    }
-
-    int getCol() {
-        return col;
     }
 
     Button getEntry() {

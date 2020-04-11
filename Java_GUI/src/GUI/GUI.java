@@ -1,11 +1,11 @@
 package GUI;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -19,16 +19,20 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class GUI extends Application {
 
-    static final int PROMPTCOLUMN = 0;
-    static final int INPUTCOLUMN = 1;
-    static final int BUTTONCOLUMN = 2;
+    private static final int COLUMNS = 3;
+    private static final int PROMPTCOLUMN = 0;
+    private static final int INPUTCOLUMN = 1;
+    private static final int BUTTONCOLUMN = 2;
+    private static List<Prompt> promptList = new ArrayList<>();
+    private static List<Input> inputList = new ArrayList<>();
+    private static List<Function> functionList = new ArrayList<>();
 
     private static boolean debug = false;
 
@@ -36,7 +40,7 @@ public class GUI extends Application {
     private static String iconURL;
 
     //Grid for UI
-    private GridPane grid = new GridPane();
+    private HBox hBox = new HBox();
     private VBox vbox = new VBox();
     //Scene of application
     private Scene scene = new Scene(vbox, 670, 640);
@@ -45,7 +49,7 @@ public class GUI extends Application {
     private static HashMap<String, Prompt> prompts = new HashMap<>();
     private static HashMap<String, PrintWindow> printWindows = new HashMap<>();
     private static HashMap<String, Function> functions = new HashMap<>();
-    private static int[] colRowCount = new int[3];
+    private static int[] colRowCount = new int[COLUMNS];
 
     /**
      * Returns a list of labels added in bottom-down order in code (chronological).
@@ -53,9 +57,9 @@ public class GUI extends Application {
      * @return keys in the HashMap inputs sorted according to the index value of the Inputs
      */
     private List<String> getSortedLabels() {
-        List<String> labels = new ArrayList<>(inputs.keySet());
-        Collections.sort(labels, Comparator.comparingInt(x -> inputs.get(x).getIndex()));
-        return labels;
+        return inputs.keySet().stream()
+            .sorted(Comparator.comparingInt(x -> inputs.get(x).getRow())).collect(
+                Collectors.toList());
     }
 
     /**
@@ -65,12 +69,25 @@ public class GUI extends Application {
         List<String> sortedLabels = getSortedLabels();
         for (String label : sortedLabels) {
             Input input = inputs.get(label);
-            if(input.getType() == FIELD.COMBO){
+            if (input.getType() == FIELD.COMBO) {
                 input.setValue(((ComboBox<String>) (input.getEntry())).getValue());
             } else{
-                input.setValue(((TextField) input.getEntry()).getText());
+                String text = ((TextField) input.getEntry()).getText();
+                if(input.getType() == FIELD.FLOAT) {
+                    try {
+                        Double.parseDouble(text);
+                    } catch (NumberFormatException e) {
+                        text = "0";
+                    }
+                } else if (input.getType() == FIELD.INT) {
+                    try {
+                        Integer.parseInt(text);
+                    } catch (NumberFormatException e) {
+                        text = "0";
+                    }
+                }
+                input.setValue(text);
             }
-
         }
     }
 
@@ -92,11 +109,20 @@ public class GUI extends Application {
             stage.getIcons().add(new Image(iconURL));
         }
 
-        grid.setPadding(new Insets(10, 10, 10, 10));
-        grid.setVgap(5);
-        grid.setHgap(5);
+        VBox[] vBoxes = new VBox[COLUMNS];
+        hBox.setSpacing(10);
+
+        for (int i = 0; i < COLUMNS; i++) {
+            VBox vBox = new VBox();
+            vBox.setPadding(new Insets(5, 0, 5, 0));
+            hBox.getChildren().add(vBox);
+            HBox.setHgrow(vBox, Priority.ALWAYS);
+            vBoxes[i] = vBox;
+        }
+
+        vbox.getChildren().add(hBox);
+        vbox.setPadding(new Insets(5, 5, 5, 5));
         vbox.setAlignment(Pos.TOP_CENTER);
-        vbox.getChildren().add(grid);
 
         for (String label : printWindows.keySet()) {
             TextArea printWindow = new TextArea();
@@ -107,27 +133,47 @@ public class GUI extends Application {
             printWindows.get(label).setEntry(printWindow);
         }
 
-        for (String p : prompts.keySet()) {
+        int row = 0;
+        for (String p : prompts.keySet().stream()
+            .sorted(Comparator.comparingInt(x -> prompts.get(x).getRow())).collect(
+                Collectors.toList())) {
+            while (prompts.get(p).getRow() > row) {
+                Label spacer = new Label();
+                vBoxes[PROMPTCOLUMN].getChildren().add(spacer);
+                VBox.setMargin(spacer, new Insets(6, 2, 6, 2));
+                row++;
+            }
             Label label = new Label(prompts.get(p).getPrompt());
             label.setPrefWidth(200);
-            GridPane.setConstraints(label, prompts.get(p).getCol(), prompts.get(p).getRow());
-            grid.getChildren().add(label);
+            vBoxes[PROMPTCOLUMN].getChildren().add(label);
+            VBox.setMargin(label, new Insets(6, 2, 6, 2));
             prompts.get(p).setEntry(label);
+            row++;
         }
 
-        // no need for spacers in Javafx?
-
+        row = 0;
         for (String sortedLabel : getSortedLabels()) {
             Input label = inputs.get(sortedLabel);
+            while (label.getRow() > row) {
+                Label spacer = new Label();
+                vBoxes[INPUTCOLUMN].getChildren().add(spacer);
+                VBox.setMargin(spacer, new Insets(6, 2, 6, 2));
+                row++;
+            }
             if (label.getType() == FIELD.COMBO) {
                 ComboBox<String> comboBox = new ComboBox<>(FXCollections
-                    .observableList((List<String>) label.getInitValue()));
+                    .observableList(
+                        ((List<Object>) (label.getInitValue())).stream().map(Object::toString)
+                            .collect(Collectors.toList())));
+                comboBox.getSelectionModel().selectFirst();
                 label.setEntry(comboBox);
-                GridPane.setConstraints(comboBox, label.getCol(), label.getRow());
-                inputs.get(label).setEntry(comboBox);
+                vBoxes[INPUTCOLUMN].getChildren().add(comboBox);
+                VBox.setMargin(comboBox, new Insets(2, 2, 2, 2));
+                inputs.get(sortedLabel).setEntry(comboBox);
             } else {
                 TextField field = new TextField();
-                field.setPromptText(label.getValue().toString());
+                field.setText(label.getValue());
+                field.setPromptText(label.getPlaceholder());
                 field.setPrefColumnCount(23);
                 switch (label.getType()) {
                     case FLOAT:
@@ -149,31 +195,43 @@ public class GUI extends Application {
                             });
                         break;
                 }
-                GridPane.setConstraints(field, label.getCol(), label.getRow());
-                grid.getChildren().add(field);
+                vBoxes[INPUTCOLUMN].getChildren().add(field);
+                VBox.setMargin(field, new Insets(2, 2, 2, 2));
                 inputs.get(sortedLabel).setEntry(field);
             }
+            row++;
         }
 
-        for (String funcLabel : functions.keySet()) {
+        row = 0;
+
+        for (String funcLabel : functions.keySet().stream()
+            .sorted(Comparator.comparingInt(x -> functions.get(x).getRow())).collect(
+                Collectors.toList())) {
             Function function = functions.get(funcLabel);
+            while (function.getRow() > row) {
+                Label spacer = new Label();
+                vBoxes[BUTTONCOLUMN].getChildren().add(spacer);
+                VBox.setMargin(spacer, new Insets(6, 2, 6, 2));
+                row++;
+            }
             Button button = new Button(funcLabel);
-            GridPane.setConstraints(button, function.getCol(), function.getRow());
-            grid.getChildren().add(button);
+            vBoxes[BUTTONCOLUMN].getChildren().add(button);
+            VBox.setMargin(button, new Insets(2, 2, 2, 2));
             button.setOnAction(e -> buttonPressed(function.getFunction()));
             function.setEntry(button);
+            row++;
         }
 
         stage.setOnCloseRequest(e -> refreshInput());
     }
 
     public void addPrintWindow(String label) {
-        PrintWindow printWindow = new PrintWindow(printWindows.size());
+        PrintWindow printWindow = new PrintWindow();
         printWindows.put(label, printWindow);
     }
 
     public void addButton(String label, Consumer<GUI> function) {
-        Function f = new Function(function, colRowCount[BUTTONCOLUMN]++, BUTTONCOLUMN);
+        Function f = new Function(function, colRowCount[BUTTONCOLUMN]++);
         functions.put(label, f);
 
     }
@@ -194,38 +252,58 @@ public class GUI extends Application {
     /**
      * Adds a field input
      */
-    private void inputHelper(String label, int col, int row, Object defValue, FIELD typeOfInput) {
-        inputs.put(label, new Input(col, row, defValue, typeOfInput));
+    private void inputHelper(String label, int row, Object defValue, FIELD typeOfInput) {
+        inputs.put(label, new Input(row, defValue, typeOfInput));
+    }
+
+    /**
+     * Adds a field input
+     */
+    private void inputHelper(String label, int row, Object defValue, FIELD typeOfInput, String placeholder) {
+        inputs.put(label, new Input(row, defValue, typeOfInput, placeholder));
     }
 
     public void addIntInput(String label) {
-        addIntInput(label, 0);
+        addIntInput(label, "");
     }
 
-    public void addIntInput(String label, int defValue) {
-        inputHelper(label, INPUTCOLUMN, colRowCount[INPUTCOLUMN]++, defValue, FIELD.INT);
+    public void addIntInput(String label, String placeholder){
+        addIntInput(label, placeholder, 0);
+    }
+
+    public void addIntInput(String label, String placeholder, int defValue) {
+        inputHelper(label, colRowCount[INPUTCOLUMN]++, defValue, FIELD.INT, placeholder);
     }
 
     public void addStringInput(String label) {
-        addStringInput(label, "");
+        addStringInput(label, "", "");
     }
 
-    public void addStringInput(String label, String defValue) {
-        inputHelper(label, INPUTCOLUMN, colRowCount[INPUTCOLUMN]++, defValue, FIELD.STRING);
+    public void addStringInput(String label, String placeholder) {
+        addStringInput(label, "", placeholder);
+    }
+
+    public void addStringInput(String label, String placeholder, String defValue) {
+        inputHelper(label, colRowCount[INPUTCOLUMN]++, defValue, FIELD.STRING, placeholder);
     }
 
     public void addFloatInput(String label) {
-        addFloatInput(label, 0f);
+        addFloatInput(label, "");
     }
 
-    public void addFloatInput(String label, double defValue) {
-        inputHelper(label, INPUTCOLUMN, colRowCount[INPUTCOLUMN]++, defValue, FIELD.FLOAT);
+    public void addFloatInput(String label, String placeholder){
+        addFloatInput(label, placeholder, 0d);
     }
 
-    public void addComboInput(String prompt, List<Object> choices) {
+    public void addFloatInput(String label, String placeholder, double defValue){
+        inputHelper(label, colRowCount[INPUTCOLUMN]++, defValue, FIELD.FLOAT, placeholder);
+    }
+
+    public void addComboInput(String prompt, List choices) {
         int row = Math.max(colRowCount[PROMPTCOLUMN], colRowCount[INPUTCOLUMN]);
         Prompt p = new Prompt(prompt, true, row, PROMPTCOLUMN);
-        inputHelper("__" + prompt + "__", INPUTCOLUMN, row, choices, FIELD.COMBO);
+        prompts.put(prompt, p);
+        inputHelper("__" + prompt + "__", row, choices, FIELD.COMBO);
         colRowCount[PROMPTCOLUMN] = row + 1;
         colRowCount[INPUTCOLUMN] = row + 1;
     }

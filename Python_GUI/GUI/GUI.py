@@ -155,8 +155,8 @@ class GuiClass:
         self.__colRowCount[0] += 1
 
     def addSpacer(self, col: int) -> None:
-        temp = {'col': col, 'row': self.__colRowCount[col - 1]}
-        self.__colRowCount[col - 1] += 1
+        temp = {'col': col, 'row': self.__colRowCount[col]}
+        self.__colRowCount[col] += 1
         self.__spacers.append(temp)
 
     def addIntInput(self, label: str, defValue: int = 0) -> None:

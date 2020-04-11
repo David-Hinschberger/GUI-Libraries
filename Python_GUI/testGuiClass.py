@@ -26,12 +26,6 @@ def fizzBuzz1(screen: GuiClass):
     screen.set('window1', y)
 
 
-def fizzBuzz2(screen: GuiClass):
-    results = ["FizzBuzz" if i % (3 * 5) == 0 else "Fizz" if i % 3 == 0 else "Buzz" if i % 5 == 0 else str(i) for i in
-               range(1, screen.getInt("int2"))]
-    screen.set('window1', ', '.join(results))
-
-
 def main():
     int1 = 10
     int2 = 20
@@ -40,7 +34,7 @@ def main():
     GUI = GuiClass()
 
     GUI.addText("label1", "Testing data entry", alignLeft=False)
-    GUI.addSpacer(col=2)
+    GUI.addSpacer(col=1)
 
     GUI.addText("label2", "Enter int 1")
     GUI.addIntInput("int1", defValue=int1)
@@ -58,8 +52,7 @@ def main():
     GUI.addComboBoxInput("Enter your favorite fruit", choices=fruitChoices)
     GUI.addButton("add", function=addTwoValues)
     GUI.addButton("Float + 1", function=floatAdd1)
-    GUI.addButton("Fizzbuzz until int1 (new lines)", function=fizzBuzz1)
-    GUI.addButton("Fizzbuzz until int2 (no new lines)", function=fizzBuzz2)
+    GUI.addButton("Fizzbuzz until int1", function=fizzBuzz1)
 
     GUI.addText("label6", "Total")
     GUI.addIntInput("total")
