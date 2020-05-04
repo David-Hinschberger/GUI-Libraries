@@ -1,4 +1,4 @@
-from Python_GUI.GUI.GUI import *
+from GUI.GUI import *
 
 
 def addTwoValues(screen: GuiClass):
@@ -35,6 +35,7 @@ def main():
 
     GUI.addText("label1", "Testing data entry", alignLeft=False)
     GUI.addSpacer(col=1)
+    GUI.addFileInput("Choose a File")
 
     GUI.addText("label2", "Enter int 1")
     GUI.addIntInput("int1", defValue=int1)
@@ -59,7 +60,7 @@ def main():
 
     GUI.addPrintWindow("window1")
 
-    GUI.addTitle("Windows 11")
+    GUI.setTitle("Windows 11")
 
     print("Before inputs")
     print("int1 is ", int1)
@@ -82,6 +83,8 @@ def main():
     print("Total is ", GUI.getInt("total"))
     print("Numeric total is ", (int1 + int2 + GUI.getFloat("float1")))
     print("Favorite fruit is ", GUI.getStr("Enter your favorite fruit"))
+
+    print(GUI.getFile("Choose a File"))
 
 
 if __name__ == "__main__":

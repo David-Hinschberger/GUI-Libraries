@@ -45,6 +45,7 @@ public class Test {
 
         gui.addText("label1", "Testing data entry", false);
         gui.addSpacer(1);
+        gui.addFileInput("Choose a File");
 
         gui.addText("label2", "Enter int 1");
         gui.addIntInput("int1", "int1", int1);
@@ -72,6 +73,7 @@ public class Test {
 
         gui.setTitle("Windows 11");
 
+
         System.out.println("Before inputs");
         System.out.println("int1 is " + int1);
         System.out.println("int2 is " + int2);
@@ -93,6 +95,8 @@ public class Test {
         System.out.println("Total is " + gui.getInt("total"));
         System.out.println("Numeric total is " + (int1 + int2 + gui.getFloat("float1")));
         System.out.println("Favorite fruit is " + gui.getStr("Enter your favorite fruit"));
+
+        System.out.println(gui.getFile("Choose a File"));
     }
 
 
