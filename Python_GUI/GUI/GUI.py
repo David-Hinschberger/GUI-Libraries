@@ -1,6 +1,7 @@
-from tkinter import PhotoImage, Grid, Text, TclError, EventType, Tk
+from tkinter import PhotoImage, Grid, Text, TclError, EventType, Tk, filedialog
 from tkinter.ttk import Combobox, Label, Frame, Scrollbar, Button, Entry
 from typing import Union, Iterable
+import os
 
 
 class GuiClass:
@@ -12,6 +13,8 @@ class GuiClass:
         self.__printWindow = {}
         self.__spacers = []
         self.__prompts = {}
+        self.__fileSelections = {}
+        self.__functionNameToLabel = {}
         self.__root = Tk()
         # Keeps track of rows added for each column
         self.__colRowCount = [0, 0, 0]
@@ -22,6 +25,8 @@ class GuiClass:
     def __refreshInput(self) -> None:
         sortedLabels = self.__getSortedLabels()
         for label in sortedLabels:
+            if self.__inputs[label]['type'] == 'readstring':
+                continue
             self.__inputs[label]['value'] = self.__inputs[label]['Entry'].get()
 
     # we go here when the user exits the form and wants to keep the data
@@ -42,6 +47,12 @@ class GuiClass:
             'col': col,
             'row': row,
             'index': len(self.__inputs) + 1}
+    
+    def __getFileName(self, event: EventType) -> None:
+        name = str(event.widget)[1:]
+        filename = filedialog.askopenfilename(initialdir=os.getcwd(), title=name)
+        self.__fileSelections[f"##{name}##"]['filename'] = filename
+        self.__fileSelections[f"##{name}##"]['entry'].configure(text= "No file selected." if (filename == "") else filename)
 
     @staticmethod
     def __validateFloat(value_if_allowed: str) -> bool:
@@ -88,8 +99,10 @@ class GuiClass:
             frame = Frame(self.__root)
             pw = self.__printWindow[label]
             pw['Text'] = Text(frame, wrap="word")
-            pw['Scroll'] = Scrollbar(frame, command=pw['Text'].yview, orient="vertical")
-            pw['Text'].config(state="disabled", yscrollcommand=pw['Scroll'].set)
+            pw['Scroll'] = Scrollbar(
+                frame, command=pw['Text'].yview, orient="vertical")
+            pw['Text'].config(state="disabled",
+                              yscrollcommand=pw['Scroll'].set)
             pw['Scroll'].pack(side="right", fill="y")
             pw['Text'].pack(side="left", fill="both", expand="yes")
             frame.grid(sticky="NSEW", row=max(self.__colRowCount), column=pw['startCol'], padx=5, pady=5,
@@ -99,7 +112,8 @@ class GuiClass:
                 self.__colRowCount[i] += 1
 
         for p in self.__prompts.keys():
-            self.__prompts[p]['Entry'] = Label(self.__root, text=self.__prompts[p]['prompt'])
+            self.__prompts[p]['Entry'] = Label(
+                self.__root, text=self.__prompts[p]['prompt'])
             self.__prompts[p]['Entry'].grid(sticky="W" if self.__prompts[p]['alignLeft'] else 'E',
                                             row=self.__prompts[p]['row'], column=self.__prompts[p]['col'], padx=5,
                                             pady=5)
@@ -107,32 +121,48 @@ class GuiClass:
         # write out spacers in grid
         for index in range(len(self.__spacers)):
             s = self.__spacers[index]
-            Label(self.__root).grid(row=s['row'], column=s['col'], padx=5, pady=5, ipady='1m')
+            Label(self.__root).grid(
+                row=s['row'], column=s['col'], padx=5, pady=5, ipady='1m')
 
-        for sortedLabel in  self.__getSortedLabels():
+        for sortedLabel in self.__getSortedLabels():
             label = self.__inputs[sortedLabel]
             if label['type'] == 'combo':
-                label['Entry'] = Combobox(self.__root, values=label['initValue'], state="readonly")
+                label['Entry'] = Combobox(
+                    self.__root, values=label['initValue'], state="readonly")
                 label['Entry'].current(0)
-                label['Entry'].grid(sticky='EW', row=label['row'], column=label['col'], padx=5, pady=5)
+                label['Entry'].grid(
+                    sticky='EW', row=label['row'], column=label['col'], padx=5, pady=5)
+            elif label['type'] == 'readstring':
+                prompt = Label(self.__root, text="No file selected.")
+                prompt.grid(sticky="W", row=self.__fileSelections[sortedLabel]['row'], column=2, padx=5,
+                                                pady=5)
+                self.__fileSelections[sortedLabel]['entry'] = prompt
             else:
                 # verify command
                 vcmd = (self.__root.register(self.__validateFloat), '%P') if label['type'] == 'float' else (
                     self.__root.register(self.__validateInt), '%P') if label['type'] == 'int' else None
-                label['Entry'] = Entry(self.__root, validate='key', validatecommand=vcmd, width=23)
-                label['Entry'].grid(sticky='EW', row=label['row'], column=label['col'], padx=5, pady=5)
+                label['Entry'] = Entry(
+                    self.__root, validate='key', validatecommand=vcmd, width=23)
+                label['Entry'].grid(
+                    sticky='EW', row=label['row'], column=label['col'], padx=5, pady=5)
                 label['Entry'].insert(0, label['value'])
 
         for funcLabel in self.__functions:
             label = self.__functions[funcLabel]
             label['Button'] = Button(self.__root, takefocus=1, text=funcLabel,
                                      name=funcLabel[0].lower() + funcLabel[1:])
-            label['Button'].grid(padx=5, pady=5, ipady='1m', sticky="NSEW", row=label['row'], column=label['col'])
-            label['Button'].bind("<Return>", self.__buttonPressed)
-            label['Button'].bind("<Button-1>", self.__buttonPressed)
+            label['Button'].grid(
+                padx=5, pady=5, ipady='1m', sticky="NSEW", row=label['row'], column=label['col'])
+            if 'function' not in label:
+                label['Button'].bind("<Return>", self.__getFileName)
+                label['Button'].bind("<Button-1>", self.__getFileName)
+            else:
+                label['Button'].bind("<Return>", self.__buttonPressed)
+                label['Button'].bind("<Button-1>", self.__buttonPressed)
 
-        # Do we want to refresh the input if the window is closed out?
-        self.__root.protocol("WM_DELETE_WINDOW", lambda: (self.__refreshInput(), self.__root.destroy()))
+        # Refresh the input if the window is closed out
+        self.__root.protocol("WM_DELETE_WINDOW", lambda: (
+            self.__refreshInput(), self.__root.destroy()))
         self.__root.mainloop()
         try:
             self.__root.destroy()
@@ -144,7 +174,9 @@ class GuiClass:
         self.__printWindow[label] = {'startCol': 1, 'endCol': 4}
 
     def addButton(self, label: str, function: callable) -> None:
-        self.__functions[label] = {'function': function, 'col': 3, 'row': self.__colRowCount[2]}
+        self.__functions[label] = {
+            'function': function, 'col': 3, 'row': self.__colRowCount[2]}
+        self.__functionNameToLabel[label[0].lower() + label[1:]] = label
         self.__colRowCount[2] += 1
 
     def addText(self, identifier: str, prompt: str, alignLeft: bool = True) -> None:
@@ -178,13 +210,31 @@ class GuiClass:
                                   'col': 1,
                                   'row': row}
         self.__inputHelper(f"__{prompt}__", 2, row, choices, 'combo')
-        self.__colRowCount[1] = row + 1
         self.__colRowCount[0] = row + 1
+        self.__colRowCount[1] = row + 1
 
-    def addTitle(self, title: str) -> None:
+    def addFileInput(self, prompt: str) -> None:
+        row = max(self.__colRowCount)
+        prompt = prompt[0].lower() + prompt[1:]
+        self.__prompts[prompt] = {'prompt': prompt,
+                                  'alignLeft': True,
+                                  'col': 1,
+                                  'row': row}
+        self.__inputHelper(f"##{prompt}##", 2, row, prompt, 'readstring')
+        self.__functions[f"{prompt}"] = {'col': 3, 'row': row}
+        self.__functionNameToLabel[f"##{prompt}##"] = prompt
+        self.__colRowCount[0] = row + 1
+        self.__colRowCount[1] = row + 1
+        self.__colRowCount[2] = row + 1
+        self.__fileSelections[f"##{prompt}##"] = {'row': row,
+                                                  'prompt': prompt,
+                                                  'filename': '',
+                                                  'entry': None}
+
+    def setTitle(self, title: str) -> None:
         self.__title = title
 
-    def addIcon(self, imagePath: str) -> None:
+    def setIcon(self, imagePath: str) -> None:
         self.__imagePath = imagePath
 
     def startGUI(self) -> None:
@@ -230,6 +280,9 @@ class GuiClass:
         except ValueError:
             retVal = 0
         return retVal
+
+    def getFile(self, label: str) -> str:
+        return self.__fileSelections[f"##{label[0].lower() + label[1:]}##"]['filename']
 
     def set(self, label: str, value: Union[int, float, str], append: bool = False) -> None:
         if label in self.__printWindow:

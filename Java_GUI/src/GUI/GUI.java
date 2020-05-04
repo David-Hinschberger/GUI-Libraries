@@ -1,11 +1,12 @@
 package GUI;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -22,6 +23,8 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
 public class GUI extends Application {
@@ -30,9 +33,6 @@ public class GUI extends Application {
     private static final int PROMPTCOLUMN = 0;
     private static final int INPUTCOLUMN = 1;
     private static final int BUTTONCOLUMN = 2;
-    private static List<Prompt> promptList = new ArrayList<>();
-    private static List<Input> inputList = new ArrayList<>();
-    private static List<Function> functionList = new ArrayList<>();
 
     private static boolean debug = false;
 
@@ -48,6 +48,7 @@ public class GUI extends Application {
     private static HashMap<String, Input> inputs = new HashMap<>();
     private static HashMap<String, Prompt> prompts = new HashMap<>();
     private static HashMap<String, PrintWindow> printWindows = new HashMap<>();
+    private static HashMap<String, FileSelect> fileSelections = new HashMap<>();
     private static HashMap<String, Function> functions = new HashMap<>();
     private static int[] colRowCount = new int[COLUMNS];
 
@@ -69,11 +70,12 @@ public class GUI extends Application {
         List<String> sortedLabels = getSortedLabels();
         for (String label : sortedLabels) {
             Input input = inputs.get(label);
-            if (input.getType() == FIELD.COMBO) {
+            if (input.getType() == FIELD.READSTRING) {
+            } else if (input.getType() == FIELD.COMBO) {
                 input.setValue(((ComboBox<String>) (input.getEntry())).getValue());
-            } else{
+            } else {
                 String text = ((TextField) input.getEntry()).getText();
-                if(input.getType() == FIELD.FLOAT) {
+                if (input.getType() == FIELD.FLOAT) {
                     try {
                         Double.parseDouble(text);
                     } catch (NumberFormatException e) {
@@ -170,6 +172,28 @@ public class GUI extends Application {
                 vBoxes[INPUTCOLUMN].getChildren().add(comboBox);
                 VBox.setMargin(comboBox, new Insets(2, 2, 2, 2));
                 inputs.get(sortedLabel).setEntry(comboBox);
+            } else if (label.getType() == FIELD.READSTRING) {
+                TextField field = new TextField();
+                field.setPrefColumnCount(23);
+                field.setText("No File Selected");
+                field.setEditable(false);
+                vBoxes[INPUTCOLUMN].getChildren().add(field);
+                VBox.setMargin(field, new Insets(2, 2, 2, 2));
+                fileSelections.get("##" + label.getValue() + "##").setTextField(field);
+                
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle(label.getValue());
+                fileChooser.getExtensionFilters().addAll(new ExtensionFilter("All Files", "*.*"));
+                Button button = new Button(label.getValue());
+                button.setOnAction(e -> {
+                    File file = fileChooser.showOpenDialog(stage);
+                    fileSelections.get("##" + label.getValue() + "##").setFile(file);
+                    fileSelections.get("##" + label.getValue() + "##").getTextField()
+                        .setText(file != null ? file.getAbsolutePath() : "No File Selected");
+                });
+                functions.put("##" + label.getValue() + "##", new Function(null, label.getRow()));
+                functions.get("##" + label.getValue() + "##").setEntry(button);
+
             } else {
                 TextField field = new TextField();
                 field.setText(label.getValue());
@@ -207,6 +231,19 @@ public class GUI extends Application {
         for (String funcLabel : functions.keySet().stream()
             .sorted(Comparator.comparingInt(x -> functions.get(x).getRow())).collect(
                 Collectors.toList())) {
+
+            while (functions.get(funcLabel).getRow() > row) {
+                Label spacer = new Label();
+                vBoxes[BUTTONCOLUMN].getChildren().add(spacer);
+                VBox.setMargin(spacer, new Insets(6, 2, 6, 2));
+                row++;
+            }
+            if(functions.get(funcLabel).getEntry() != null){
+                vBoxes[BUTTONCOLUMN].getChildren().add(functions.get(funcLabel).getEntry());
+                VBox.setMargin(functions.get(funcLabel).getEntry(), new Insets(2, 2, 2, 2));
+                continue;
+            }
+
             Function function = functions.get(funcLabel);
             while (function.getRow() > row) {
                 Label spacer = new Label();
@@ -220,6 +257,10 @@ public class GUI extends Application {
             button.setOnAction(e -> buttonPressed(function.getFunction()));
             function.setEntry(button);
             row++;
+        }
+
+        if(vBoxes[PROMPTCOLUMN].getChildren().get(0) != null){
+            vBoxes[PROMPTCOLUMN].getChildren().get(0).requestFocus();
         }
 
         stage.setOnCloseRequest(e -> refreshInput());
@@ -259,7 +300,8 @@ public class GUI extends Application {
     /**
      * Adds a field input
      */
-    private void inputHelper(String label, int row, Object defValue, FIELD typeOfInput, String placeholder) {
+    private void inputHelper(String label, int row, Object defValue, FIELD typeOfInput,
+        String placeholder) {
         inputs.put(label, new Input(row, defValue, typeOfInput, placeholder));
     }
 
@@ -267,7 +309,7 @@ public class GUI extends Application {
         addIntInput(label, "");
     }
 
-    public void addIntInput(String label, String placeholder){
+    public void addIntInput(String label, String placeholder) {
         addIntInput(label, placeholder, 0);
     }
 
@@ -291,21 +333,35 @@ public class GUI extends Application {
         addFloatInput(label, "");
     }
 
-    public void addFloatInput(String label, String placeholder){
+    public void addFloatInput(String label, String placeholder) {
         addFloatInput(label, placeholder, 0d);
     }
 
-    public void addFloatInput(String label, String placeholder, double defValue){
+    public void addFloatInput(String label, String placeholder, double defValue) {
         inputHelper(label, colRowCount[INPUTCOLUMN]++, defValue, FIELD.FLOAT, placeholder);
     }
 
     public void addComboInput(String prompt, List choices) {
-        int row = Math.max(colRowCount[PROMPTCOLUMN], colRowCount[INPUTCOLUMN]);
+        int row = IntStream
+            .of(colRowCount[PROMPTCOLUMN], colRowCount[INPUTCOLUMN]).max().getAsInt();
         Prompt p = new Prompt(prompt, true, row, PROMPTCOLUMN);
         prompts.put(prompt, p);
         inputHelper("__" + prompt + "__", row, choices, FIELD.COMBO);
         colRowCount[PROMPTCOLUMN] = row + 1;
         colRowCount[INPUTCOLUMN] = row + 1;
+    }
+
+    public void addFileInput(String prompt) {
+        int row = IntStream
+            .of(colRowCount[PROMPTCOLUMN], colRowCount[INPUTCOLUMN], colRowCount[BUTTONCOLUMN])
+            .max().getAsInt();
+        Prompt p = new Prompt(prompt, true, row, PROMPTCOLUMN);
+        prompts.put(prompt, p);
+        inputHelper("##" + prompt + "##", row, prompt, FIELD.READSTRING, "");
+        colRowCount[PROMPTCOLUMN] = row + 1;
+        colRowCount[INPUTCOLUMN] = row + 1;
+        colRowCount[BUTTONCOLUMN] = row + 1;
+        fileSelections.put("##" + prompt + "##", new FileSelect(row, prompt));
     }
 
     public void setTitle(String title) {
@@ -387,6 +443,11 @@ public class GUI extends Application {
             // throw label not found error?
             return Double.NaN;
         }
+    }
+
+    public File getFile(String label) {
+        label = "##" + label + "##";
+        return fileSelections.get(label).getFile();
     }
 
     public void set(String label, Object value) {
