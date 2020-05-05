@@ -72,6 +72,7 @@ public class Test {
         gui.setIcon("https://puu.sh/F5xQD.png");
 
         gui.setTitle("Windows 11");
+        gui.setBackgroundColor("#4e00ff");
 
 
         System.out.println("Before inputs");

@@ -20,9 +20,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Paint;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
@@ -38,7 +41,7 @@ public class GUI extends Application {
 
     private static String title;
     private static String iconURL;
-
+    private static String backgroundColor;
     //Grid for UI
     private HBox hBox = new HBox();
     private VBox vbox = new VBox();
@@ -111,6 +114,8 @@ public class GUI extends Application {
             stage.getIcons().add(new Image(iconURL));
         }
 
+        vbox.setBackground(new Background(new BackgroundFill(backgroundColor == null ? null : Paint.valueOf("#4e00ff"), null, null)));
+
         VBox[] vBoxes = new VBox[COLUMNS];
         hBox.setSpacing(10);
 
@@ -146,6 +151,9 @@ public class GUI extends Application {
                 row++;
             }
             Label label = new Label(prompts.get(p).getPrompt());
+            if(!prompts.get(p).isAlignLeft()){
+                label.setAlignment( Pos.CENTER_RIGHT);
+            }
             label.setPrefWidth(200);
             vBoxes[PROMPTCOLUMN].getChildren().add(label);
             VBox.setMargin(label, new Insets(6, 2, 6, 2));
@@ -370,6 +378,10 @@ public class GUI extends Application {
 
     public void setIcon(String icon) {
         GUI.iconURL = icon;
+    }
+
+    public void setBackgroundColor(String hexColor){
+        backgroundColor = hexColor;
     }
 
     @Override
