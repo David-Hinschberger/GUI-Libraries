@@ -15,6 +15,7 @@ class GuiClass:
         self.__prompts = {}
         self.__fileSelections = {}
         self.__functionNameToLabel = {}
+        self.__bgColor = "SystemButtonFace"
         self.__root = Tk()
         # Keeps track of rows added for each column
         self.__colRowCount = [0, 0, 0]
@@ -90,6 +91,7 @@ class GuiClass:
         if self.__imagePath is not None:
             self.__root.iconphoto(True, PhotoImage(file=self.__imagePath))
 
+        self.__root.configure(bg=self.__bgColor)
         Grid.rowconfigure(self.__root, max(self.__colRowCount), weight=1)
         Grid.columnconfigure(self.__root, 3, weight=1)
         Grid.columnconfigure(self.__root, 1, weight=1)
@@ -121,8 +123,8 @@ class GuiClass:
         # write out spacers in grid
         for index in range(len(self.__spacers)):
             s = self.__spacers[index]
-            Label(self.__root).grid(
-                row=s['row'], column=s['col'], padx=5, pady=5, ipady='1m')
+            Label(self.__root, background=self.__bgColor).grid(
+                row=s['row'], column=s['col'], padx=0, pady=5, ipady='1m')
 
         for sortedLabel in self.__getSortedLabels():
             label = self.__inputs[sortedLabel]
@@ -236,6 +238,9 @@ class GuiClass:
 
     def setIcon(self, imagePath: str) -> None:
         self.__imagePath = imagePath
+    
+    def setBackgroundColor(self, hexColor: str) -> None:
+        self.__bgColor = hexColor
 
     def startGUI(self) -> None:
         self.__startInput()
