@@ -34,7 +34,7 @@ def main():
     GUI = GuiClass()
 
     GUI.addText("label1", "Testing data entry", alignLeft=False)
-    GUI.addSpacer(col=1)
+    GUI.addSpacer(col=2)
     GUI.addFileInput("Choose a File")
 
     GUI.addText("label2", "Enter int 1")
@@ -61,6 +61,7 @@ def main():
     GUI.addPrintWindow("window1")
 
     GUI.setTitle("Windows 11")
+    GUI.setBackgroundColor("#4e00ff")
 
     print("Before inputs")
     print("int1 is ", int1)
