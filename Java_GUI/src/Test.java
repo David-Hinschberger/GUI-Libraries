@@ -69,10 +69,11 @@ public class Test {
         gui.addIntInput("total");
 
         gui.addPrintWindow("window1");
+        gui.addPrintWindow("window2");
         gui.setIcon("https://puu.sh/F5xQD.png");
 
         gui.setTitle("Windows 11");
-        gui.setBackgroundColor("#4e00ff");
+        gui.setBackgroundColor("#ff0000");
 
 
         System.out.println("Before inputs");

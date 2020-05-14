@@ -118,7 +118,7 @@ public class GUI extends Application {
             stage.getIcons().add(new Image(iconURI));
         }
 
-        vbox.setBackground(new Background(new BackgroundFill(backgroundColor == null ? null : Paint.valueOf("#4e00ff"), null, null)));
+        vbox.setBackground(new Background(new BackgroundFill(backgroundColor == null ? null : Paint.valueOf(backgroundColor), null, null)));
 
         VBox[] vBoxes = new VBox[COLUMNS];
         hBox.setSpacing(10);
