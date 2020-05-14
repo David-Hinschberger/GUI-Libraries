@@ -7,7 +7,7 @@ public class Test {
         int int1 = screen.getInt("int1");
         int int2 = screen.getInt("int2");
         int total = int1 + int2;
-        screen.set("window1", total);
+        screen.set("window1", total, true);
     }
 
     private static void floatAdd1(GUI screen){
@@ -32,7 +32,7 @@ public class Test {
             sb.append(System.lineSeparator());
             result.append(sb);
         }
-        screen.set("window1", result.toString());
+        screen.set("window1", result.toString(), true);
     }
 
 
@@ -69,11 +69,10 @@ public class Test {
         gui.addIntInput("total");
 
         gui.addPrintWindow("window1");
-        gui.addPrintWindow("window2");
         gui.setIcon("https://puu.sh/F5xQD.png");
 
         gui.setTitle("Windows 11");
-        gui.setBackgroundColor("#ff0000");
+        gui.setBackgroundColor("#4e00ff");
 
 
         System.out.println("Before inputs");
