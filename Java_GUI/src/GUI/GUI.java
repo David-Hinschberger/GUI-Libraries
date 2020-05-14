@@ -118,7 +118,7 @@ public class GUI extends Application {
             stage.getIcons().add(new Image(iconURI));
         }
 
-        vbox.setBackground(new Background(new BackgroundFill(backgroundColor == null ? null : Paint.valueOf("#4e00ff"), null, null)));
+        vbox.setBackground(new Background(new BackgroundFill(backgroundColor == null ? null : Paint.valueOf(backgroundColor), null, null)));
 
         VBox[] vBoxes = new VBox[COLUMNS];
         hBox.setSpacing(10);
@@ -610,7 +610,11 @@ public class GUI extends Application {
      */
     public void set(String id, Object value, boolean append) {
         if (printWindows.containsKey(id)) {
-            printWindows.get(id).getEntry().setText(value.toString());
+            if (append) {
+                printWindows.get(id).getEntry().setText(printWindows.get(id).getEntry().getText() + value.toString());
+            } else {
+                printWindows.get(id).getEntry().setText(value.toString());
+            }
         } else if (prompts.containsKey(id)) {
             if (append) {
                 prompts.get(id).getEntry()
